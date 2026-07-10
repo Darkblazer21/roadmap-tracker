@@ -16,7 +16,17 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from app.config import settings
 from app.db import Base
 # Import all models so autogenerate sees them on the metadata.
-from app.models import AppSettings, DailyLog, Phase, Recap, Session, User, Week  # noqa: F401
+from app.models import (  # noqa: F401
+    AppSettings,
+    DailyLog,
+    GithubEvent,
+    GithubSyncState,
+    Phase,
+    Recap,
+    Session,
+    User,
+    Week,
+)
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)

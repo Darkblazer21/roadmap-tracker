@@ -1,11 +1,7 @@
-"""SQLAlchemy ORM models.
-
-All models inherit from app.db.Base. Importing this package registers every
-model on the declarative metadata so Alembic autogenerate and the lifespan
-seeder can see them.
-"""
+"""SQLAlchemy ORM models."""
 
 from app.models.daily_log import DailyLog
+from app.models.github_event import GithubEvent, GithubSyncState
 from app.models.phase import Phase
 from app.models.recap import Recap
 from app.models.session import Session
@@ -21,4 +17,6 @@ __all__ = [
     "Session",
     "DailyLog",
     "Recap",
+    "GithubEvent",
+    "GithubSyncState",
 ]

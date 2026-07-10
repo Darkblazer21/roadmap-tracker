@@ -18,6 +18,7 @@ from app.models.user import User
 from app.models.week import Week
 from app.routers import auth as auth_router
 from app.routers import daily_logs as daily_logs_router
+from app.routers import github as github_router
 from app.routers import pomodoro as pomodoro_router
 from app.routers import recaps as recaps_router
 from app.routers import sessions as sessions_router
@@ -70,10 +71,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await _seed_user(session)
         await _seed_settings(session)
 
+    # Start the nightly GitHub sync scheduler (M6).
+    from app.services.scheduler import start_scheduler
+
+    start_scheduler()
+
     yield
-    # Shutdown hook: close the async engine + Redis cleanly.
+    # Shutdown hook: stop scheduler, close Redis, close engine.
+    from app.services.scheduler import stop_scheduler
     from app.services.redis_client import close_redis
 
+    await stop_scheduler()
     await close_redis()
     await engine.dispose()
 
@@ -104,6 +112,7 @@ app.include_router(sessions_router.router)
 app.include_router(pomodoro_router.router)
 app.include_router(daily_logs_router.router)
 app.include_router(recaps_router.router)
+app.include_router(github_router.router)
 
 
 @app.get("/health")

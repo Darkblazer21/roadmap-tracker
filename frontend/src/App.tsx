@@ -15,6 +15,7 @@ import WeekDetailPage from "./pages/WeekDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import DailyLogPage from "./pages/DailyLogPage";
 import SundayRecapPage from "./pages/SundayRecapPage";
+import GithubVerdictsPage from "./pages/GithubVerdictsPage";
 import { PomodoroWidget } from "./components/PomodoroWidget";
 
 /** AuthGate: bounces to /login when no token is stored. Reads on mount and
@@ -62,6 +63,9 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
             <NavLink to="/recap" className="text-blue-600 hover:underline">
               Recap
             </NavLink>
+            <NavLink to="/github" className="text-blue-600 hover:underline">
+              GitHub
+            </NavLink>
             <NavLink to="/settings" className="text-blue-600 hover:underline">
               Settings
             </NavLink>
@@ -106,6 +110,7 @@ export default function App() {
           <Route path="/weeks/:number" element={<WeekDetailPage />} />
           <Route path="/daily-log" element={<DailyLogPage />} />
           <Route path="/recap" element={<SundayRecapPage />} />
+          <Route path="/github" element={<GithubVerdictsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
