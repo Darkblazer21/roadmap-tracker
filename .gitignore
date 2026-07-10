@@ -1,0 +1,68 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ===== Distribution / packaging =====
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# ===== Testing =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== Env / secrets =====
+.env
+.env.*
+!.env.example
+
+# ===== Database =====
+pgdata/
+*.sqlite3
+*.db
+
+# ===== Logs =====
+*.log
+
+# ===== Node / Frontend =====
+node_modules/
+frontend/dist/
+frontend/node_modules/
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+
+# ===== uv =====
+# uv.lock is committed (lockfiles should be tracked in VCS)
+
+# ===== Docker =====
+# nothing ignored here
+
+# ===== OS =====
+.DirectoryBlob
+desktop.ini
+
+# ===== opencode workspace config (tooling, not project) =====
+.opencode/

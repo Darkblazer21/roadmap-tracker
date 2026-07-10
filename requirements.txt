@@ -1,0 +1,30 @@
+# ---------- Web framework ----------
+fastapi>=0.115
+uvicorn[standard]>=0.32
+
+# ---------- Settings / validation ----------
+pydantic>=2.9
+pydantic-settings>=2.6
+
+# ---------- Database / ORM / migrations ----------
+SQLAlchemy>=2.0.36
+asyncpg>=0.30
+alembic>=1.14
+
+# ---------- Auth ----------
+python-jose[cryptography]>=3.3
+passlib[bcrypt]>=1.7
+
+# ---------- Redis (pomodoro state, rate limiting) ----------
+redis>=5.2
+
+# ---------- Scheduling (cron jobs: nightly GitHub sync) ----------
+APScheduler>=3.11
+
+# ---------- HTTP client (GitHub API) ----------
+httpx>=0.28
+
+# ---------- Testing ----------
+pytest>=8.3
+pytest-asyncio>=0.24
+respx>=0.21
