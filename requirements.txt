@@ -14,6 +14,7 @@ alembic>=1.14
 # ---------- Auth ----------
 python-jose[cryptography]>=3.3
 passlib[bcrypt]>=1.7
+bcrypt>=4.0,<5
 
 # ---------- Redis (pomodoro state, rate limiting) ----------
 redis>=5.2

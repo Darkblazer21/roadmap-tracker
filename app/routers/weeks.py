@@ -1,28 +1,32 @@
 """Weeks and phases read API.
 
 Endpoints:
-    GET  /api/weeks          - all phases with their weeks (phase accordion)
-    GET  /api/weeks/{number} - a single week by plan number
-    PATCH /api/weeks/{number} - update user state (auth-protected from M2)
+    GET   /api/weeks          - all phases with their weeks (phase accordion)
+    GET   /api/weeks/{number} - a single week by plan number
+    PATCH /api/weeks/{number} - update user state (JWT auth required)
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.db import get_db
 from app.models.phase import Phase
+from app.models.user import User
 from app.models.week import Week
 from app.schemas import PhaseWithWeeks, WeekOut, WeekPatch
+from app.services.security import get_current_user
 
 router = APIRouter(prefix="/api", tags=["weeks"])
 
 
 @router.get("/weeks", response_model=list[PhaseWithWeeks])
-async def list_weeks(db: AsyncSession = Depends(get_db)) -> list[Phase]:
+async def list_weeks(db: Annotated[AsyncSession, Depends(get_db)]) -> list[Phase]:
     """Return all phases with their ordered weeks for the sidebar."""
     result = await db.execute(
         select(Phase)
@@ -33,7 +37,9 @@ async def list_weeks(db: AsyncSession = Depends(get_db)) -> list[Phase]:
 
 
 @router.get("/weeks/{number}", response_model=WeekOut)
-async def get_week(number: int, db: AsyncSession = Depends(get_db)) -> Week:
+async def get_week(
+    number: int, db: Annotated[AsyncSession, Depends(get_db)]
+) -> Week:
     result = await db.execute(select(Week).where(Week.number == number))
     week = result.scalar_one_or_none()
     if week is None:
@@ -45,12 +51,10 @@ async def get_week(number: int, db: AsyncSession = Depends(get_db)) -> Week:
 async def patch_week(
     number: int,
     payload: WeekPatch,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _user: Annotated[User, Depends(get_current_user)],
 ) -> Week:
-    """Update a week's user state (actual_hours, recap, status, reviewed_at).
-
-    In M1 this is unprotected. M2 wraps it with JWT auth via Depends(get_current_user).
-    """
+    """Update a week's user state (actual_hours, recap, status, reviewed_at)."""
     result = await db.execute(select(Week).where(Week.number == number))
     week = result.scalar_one_or_none()
     if week is None:

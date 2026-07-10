@@ -14,10 +14,39 @@ from sqlalchemy import select
 
 from app.config import settings
 from app.db import async_session_factory, engine
+from app.models.user import User
 from app.models.week import Week
 from app.routers import weeks as weeks_router
+from app.routers import auth as auth_router
+from app.routers import settings as settings_router
 
 logger = logging.getLogger(__name__)
+
+
+async def _seed_user(session) -> None:
+    """Create the seed user from env vars if none exists yet."""
+    result = await session.execute(select(User).limit(1))
+    if result.scalar_one_or_none() is not None:
+        return
+    from app.services.security import hash_password
+
+    user = User(
+        username=settings.seed_username,
+        password_hash=hash_password(settings.seed_password),
+    )
+    session.add(user)
+    await session.commit()
+    logger.info("Seeded user %r", settings.seed_username)
+
+
+async def _seed_settings(session) -> None:
+    """Ensure the singleton settings row exists (id=1)."""
+    from app.models.settings import AppSettings
+
+    result = await session.execute(select(AppSettings).where(AppSettings.id == 1))
+    if result.scalar_one_or_none() is None:
+        session.add(AppSettings(id=1))
+        await session.commit()
 
 
 @asynccontextmanager
@@ -33,6 +62,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             logger.info("Seeded roadmap: %d phases, %d weeks", phases_n, weeks_n)
         else:
             logger.info("Roadmap already seeded - skipping import")
+
+        await _seed_user(session)
+        await _seed_settings(session)
 
     yield
     # Shutdown hook: close the async engine cleanly.
@@ -59,6 +91,8 @@ app.add_middleware(
 )
 
 app.include_router(weeks_router.router)
+app.include_router(auth_router.router)
+app.include_router(settings_router.router)
 
 
 @app.get("/health")
