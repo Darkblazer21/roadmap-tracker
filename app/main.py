@@ -1,25 +1,41 @@
 """FastAPI application entrypoint.
 
-M0 scope: health check + CORS + lifespan placeholder for the scheduler that
-will be added in M6. Routers are mounted incrementally from M1 onward.
+M1 scope: health check + CORS + lifespan that seeds the database from
+``roadmap.md`` on first boot, plus the weeks router for reading/updating.
 """
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import select
 
 from app.config import settings
+from app.db import async_session_factory, engine
+from app.models.week import Week
+from app.routers import weeks as weeks_router
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    # M6 will start the APScheduler here (nightly GitHub sync).
-    # M1 will run the roadmap importer to seed the database on first boot.
+    # Seed the database from roadmap.md if it's empty.
+    async with async_session_factory() as session:
+        result = await session.execute(select(Week).limit(1))
+        if result.scalar_one_or_none() is None:
+            markdown = settings.roadmap_path.read_text(encoding="utf-8")
+            from app.services.importer import sync_database
+
+            phases_n, weeks_n = await sync_database(session, markdown)
+            logger.info("Seeded roadmap: %d phases, %d weeks", phases_n, weeks_n)
+        else:
+            logger.info("Roadmap already seeded - skipping import")
+
     yield
-    # Shutdown hook: close the async engine + scheduler cleanly.
-    from app.db import engine
+    # Shutdown hook: close the async engine cleanly.
     await engine.dispose()
 
 
@@ -41,6 +57,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(weeks_router.router)
 
 
 @app.get("/health")
