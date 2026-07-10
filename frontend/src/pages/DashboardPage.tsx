@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { authFetch } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 interface DashboardData {
   calendar_week: number | null;
@@ -49,15 +50,16 @@ const DEVIATION_STYLES: Record<string, string> = {
 };
 
 export default function DashboardPage() {
+  const t = useT();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["dashboard"],
     queryFn: fetchDashboard,
     staleTime: 60_000,
   });
 
-  if (isLoading) return <div className="p-8 text-gray-500">Loading dashboard…</div>;
+  if (isLoading) return <div className="p-8 text-gray-500">{t("dashboard.loading")}</div>;
   if (isError || !data)
-    return <div className="p-8 text-red-600">Failed to load dashboard.</div>;
+    return <div className="p-8 text-red-600">{t("dashboard.error")}</div>;
 
   const dev = data.deviation;
   const wk = data.this_week;
@@ -68,7 +70,7 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold">{t("dashboard.heading")}</h1>
 
       {/* Deviation banner */}
       <div className={`rounded-xl border p-4 ${DEVIATION_STYLES[dev.status] ?? DEVIATION_STYLES.unknown}`}>
@@ -78,35 +80,34 @@ export default function DashboardPage() {
       {/* Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          label="Current week"
+          label={t("dashboard.current_week_label")}
           value={data.calendar_week ? `#${data.calendar_week}` : "—"}
-          sub={data.current_week_theme?.slice(0, 40) ?? "Not started"}
+          sub={data.current_week_theme?.slice(0, 40) ?? t("dashboard.not_started_sub")}
         />
         <StatCard
-          label="This week hours"
+          label={t("dashboard.this_week_hours_label")}
           value={wk ? `${wk.total_hours}h` : "—"}
-          sub={wk ? `target ${wk.hours_min}-${wk.hours_max}h` : ""}
+          sub={wk ? t("dashboard.target_hours_sub", { min: wk.hours_min, max: wk.hours_max }) : ""}
           color={wk?.over_cap ? "text-red-600" : wk?.under_min ? "text-yellow-600" : "text-green-600"}
         />
         <StatCard
-          label="Last 7 days"
+          label={t("dashboard.last_7_days_label")}
           value={`${data.last_7_days.total_hours}h`}
-          sub={`${data.last_7_days.active_days} active day(s)`}
+          sub={t("dashboard.active_days_sub", { count: data.last_7_days.active_days })}
         />
         <StatCard
-          label="Progress"
+          label={t("dashboard.progress_label")}
           value={`${progress}%`}
-          sub={`${data.week_counts.done}/${data.week_counts.total} weeks done`}
+          sub={t("dashboard.weeks_done_sub", { done: data.week_counts.done, total: data.week_counts.total })}
         />
       </div>
 
       {/* Progress bar */}
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold">Overall progress</span>
+          <span className="text-sm font-semibold">{t("dashboard.overall_progress")}</span>
           <span className="text-sm text-gray-500">
-            {data.week_counts.done} done · {data.week_counts.in_progress} active ·{" "}
-            {data.week_counts.remaining} remaining
+            {t("dashboard.progress_summary", { done: data.week_counts.done, active: data.week_counts.in_progress, remaining: data.week_counts.remaining })}
           </span>
         </div>
         <div className="h-4 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
@@ -120,25 +121,25 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <div className="flex flex-wrap gap-3">
         <Link to="/daily-log" className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 text-sm">
-          Log today
+          {t("dashboard.log_today")}
         </Link>
         <Link to="/recap" className="rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 text-sm">
-          Sunday recap
+          {t("dashboard.sunday_recap")}
         </Link>
         <Link to="/github" className="rounded-lg bg-gray-700 hover:bg-gray-800 text-white font-semibold px-4 py-2 text-sm">
-          GitHub check
+          {t("dashboard.github_check")}
         </Link>
         <a
           href="/api/export/all.json"
           className="rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 font-semibold px-4 py-2 text-sm"
         >
-          Export JSON
+          {t("dashboard.export_json")}
         </a>
         <a
           href="/api/export/sessions.csv"
           className="rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 font-semibold px-4 py-2 text-sm"
         >
-          Export CSV
+          {t("dashboard.export_csv")}
         </a>
       </div>
     </div>

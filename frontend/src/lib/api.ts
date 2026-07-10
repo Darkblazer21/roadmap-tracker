@@ -18,9 +18,16 @@ export function setToken(token: string | null): void {
 /**
  * fetch wrapper that:
  *  - prepends Authorization: Bearer <token> when present
+ *  - aborts the request after 12 seconds so a hung backend never freezes the UI
  *  - throws on non-ok responses with the JSON detail message
  *  - on 401, clears the stored token so the app bounces to /login
+ *
+ * ``init.signal`` from callers is preserved: we wire it into an AbortController
+ * chain so react-query cancellation (e.g. on route change) aborts the in-flight
+ * fetch instead of leaving it dangling.
  */
+const FETCH_TIMEOUT_MS = 12_000;
+
 export async function authFetch<T = unknown>(
   url: string,
   init: RequestInit = {}
@@ -31,12 +38,34 @@ export async function authFetch<T = unknown>(
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  const res = await fetch(url, { ...init, headers });
+
+  // Combine the caller's signal (if any) with our timeout signal, so either
+  // one aborts the request. This is important: react-query passes an Abort
+  // signal to cancel stale queries on route changes, and we must honor it.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  if (init.signal) {
+    if (init.signal.aborted) controller.abort();
+    else init.signal.addEventListener("abort", () => controller.abort());
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(url, { ...init, headers, signal: controller.signal });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw err;
+    }
+    throw new Error("Réseau injoignable");
+  }
+  clearTimeout(timeoutId);
+
   if (res.status === 401) {
     setToken(null);
     // Notify the AuthGate so react-router can redirect, avoiding a hash jump.
     window.dispatchEvent(new CustomEvent("auth:logout"));
-    throw new Error("Unauthorized");
+    throw new Error("Non autorisé");
   }
   if (!res.ok) {
     let detail = res.statusText;

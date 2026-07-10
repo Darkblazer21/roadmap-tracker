@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch, type Phase, type Week } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 /**
  * Daily log page: today-by-default form + scrollable history of logs for the
@@ -31,6 +32,7 @@ function todayISO(): string {
 }
 
 export default function DailyLogPage() {
+  const t = useT();
   const qc = useQueryClient();
   const [weekId, setWeekId] = useState<number>(1);
   const [date, setDate] = useState<string>(todayISO());
@@ -59,7 +61,7 @@ export default function DailyLogPage() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["daily-logs", weekId] });
-      setMsg("Journal saved");
+      setMsg(t("daily_log.success_message"));
       setTopic("");
       setLearned("");
       setBlockers("");
@@ -75,7 +77,7 @@ export default function DailyLogPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Daily log</h1>
+      <h1 className="text-2xl font-bold">{t("daily_log.heading")}</h1>
 
       <form
         onSubmit={(e) => {
@@ -86,7 +88,7 @@ export default function DailyLogPage() {
       >
         <div className="grid grid-cols-2 gap-3">
           <label>
-            <span className="text-sm">Week</span>
+            <span className="text-sm">{t("daily_log.week_label")}</span>
             <select
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
               value={weekId}
@@ -100,7 +102,7 @@ export default function DailyLogPage() {
             </select>
           </label>
           <label>
-            <span className="text-sm">Date</span>
+            <span className="text-sm">{t("daily_log.date_label")}</span>
             <input
               type="date"
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -111,34 +113,34 @@ export default function DailyLogPage() {
         </div>
 
         <label className="block">
-          <span className="text-sm">Topic</span>
+          <span className="text-sm">{t("daily_log.topic_label")}</span>
           <input
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            placeholder="What you worked on today"
+            placeholder={t("daily_log.topic_placeholder")}
           />
         </label>
 
         <label className="block">
-          <span className="text-sm">Learned</span>
+          <span className="text-sm">{t("daily_log.learned_label")}</span>
           <textarea
             rows={3}
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
             value={learned}
             onChange={(e) => setLearned(e.target.value)}
-            placeholder="Key takeaways, new concepts..."
+            placeholder={t("daily_log.learned_placeholder")}
           />
         </label>
 
         <label className="block">
-          <span className="text-sm">Blockers</span>
+          <span className="text-sm">{t("daily_log.blockers_label")}</span>
           <textarea
             rows={2}
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
             value={blockers}
             onChange={(e) => setBlockers(e.target.value)}
-            placeholder="What's stuck, what to revisit?"
+            placeholder={t("daily_log.blockers_placeholder")}
           />
         </label>
 
@@ -153,12 +155,12 @@ export default function DailyLogPage() {
           disabled={submit.isPending}
           className="rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-6 py-2"
         >
-          {submit.isPending ? "Saving..." : "Save today's log"}
+          {submit.isPending ? t("daily_log.saving") : t("daily_log.save")}
         </button>
       </form>
 
       <section className="space-y-2">
-        <h2 className="font-semibold">History — week {weekId}</h2>
+        <h2 className="font-semibold">{t("daily_log.history_heading", { weekId })}</h2>
         <ul className="space-y-2">
           {(logs ?? []).map((l) => (
             <li
@@ -171,22 +173,22 @@ export default function DailyLogPage() {
                   className="text-xs text-red-600 hover:underline"
                   onClick={() => del.mutate(l.id)}
                 >
-                  delete
+                  {t("daily_log.delete_button")}
                 </button>
               </div>
-              {l.topic && <div className="mt-1"><b>Topic:</b> {l.topic}</div>}
+              {l.topic && <div className="mt-1"><b>{t("daily_log.topic_inline_label")}</b> {l.topic}</div>}
               {l.learned && (
-                <div className="mt-1 whitespace-pre-wrap"><b>Learned:</b> {l.learned}</div>
+                <div className="mt-1 whitespace-pre-wrap"><b>{t("daily_log.learned_inline_label")}</b> {l.learned}</div>
               )}
               {l.blockers && (
                 <div className="mt-1 text-red-700 dark:text-red-400">
-                  <b>Blockers:</b> {l.blockers}
+                  <b>{t("daily_log.blockers_inline_label")}</b> {l.blockers}
                 </div>
               )}
             </li>
           ))}
           {(logs ?? []).length === 0 && (
-            <li className="text-gray-500 text-sm">No logs yet for this week.</li>
+            <li className="text-gray-500 text-sm">{t("daily_log.empty_state")}</li>
           )}
         </ul>
       </section>

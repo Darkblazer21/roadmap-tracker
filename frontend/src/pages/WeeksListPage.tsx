@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { authFetch, type Phase, type Week } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 async function fetchPhases(): Promise<Phase[]> {
   return authFetch<Phase[]>("/api/weeks");
@@ -8,21 +9,22 @@ async function fetchPhases(): Promise<Phase[]> {
 
 export default function WeeksListPage() {
   const navigate = useNavigate();
+  const t = useT();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["phases"],
     queryFn: fetchPhases,
   });
 
   if (isLoading)
-    return <div className="p-8 text-gray-500">Loading weeks...</div>;
+    return <div className="p-8 text-gray-500">{t("weeks_list.loading")}</div>;
   if (isError)
-    return <div className="p-8 text-red-600">Failed to load weeks.</div>;
+    return <div className="p-8 text-red-600">{t("weeks_list.error")}</div>;
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Roadmap Weeks</h1>
+      <h1 className="text-2xl font-bold">{t("weeks_list.heading")}</h1>
       <p className="text-gray-600 dark:text-gray-400">
-        Click a week to see its details.
+        {t("weeks_list.help_text")}
       </p>
 
       {data!.map((phase) => (
@@ -40,14 +42,6 @@ const STATUS_STYLES: Record<string, string> = {
   skipped: "bg-gray-400",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  not_started: "Not started",
-  in_progress: "In progress",
-  done: "Done",
-  late: "Late",
-  skipped: "Skipped",
-};
-
 function PhaseAccordion({
   phase,
   onWeekClick,
@@ -55,6 +49,10 @@ function PhaseAccordion({
   phase: Phase;
   onWeekClick: (n: number) => void;
 }) {
+  const t = useT();
+  function statusLabel(status: string): string {
+    return t(`status.${status}`);
+  }
   return (
     <details
       className="group rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
@@ -63,7 +61,7 @@ function PhaseAccordion({
       <summary className="cursor-pointer select-none px-4 py-3 bg-gray-100 dark:bg-gray-800 font-semibold flex items-center justify-between">
         <span>{phase.title}</span>
         <span className="text-sm text-gray-500">
-          {phase.weeks.length} weeks
+          {t("weeks_list.phase_weeks_count", { count: phase.weeks.length })}
         </span>
       </summary>
 
@@ -76,11 +74,11 @@ function PhaseAccordion({
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left border-b border-gray-200 dark:border-gray-700">
-            <th className="px-3 py-2">#</th>
-            <th className="px-3 py-2">Theme</th>
-            <th className="px-3 py-2 text-center">Status</th>
-            <th className="px-3 py-2 text-right">Hours</th>
-            <th className="px-3 py-2 text-center">Buffer</th>
+            <th className="px-3 py-2">{t("weeks_list.col_number")}</th>
+            <th className="px-3 py-2">{t("weeks_list.col_theme")}</th>
+            <th className="px-3 py-2 text-center">{t("weeks_list.col_status")}</th>
+            <th className="px-3 py-2 text-right">{t("weeks_list.col_hours")}</th>
+            <th className="px-3 py-2 text-center">{t("weeks_list.col_buffer")}</th>
           </tr>
         </thead>
         <tbody>
@@ -101,20 +99,20 @@ function PhaseAccordion({
               <td className="px-3 py-2 text-center">
                 <span
                   className={`inline-block h-3 w-3 rounded-full ${STATUS_STYLES[w.status]}`}
-                  title={STATUS_LABELS[w.status]}
+                  title={statusLabel(w.status)}
                 />
               </td>
               <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-400">
                 {w.hours_min}-{w.hours_max}h
                 {w.actual_hours > 0 && (
                   <span className="ml-1 text-green-600">
-                    ({w.actual_hours}h done)
+                    {t("weeks_list.hours_done_badge", { hours: w.actual_hours })}
                   </span>
                 )}
               </td>
               <td className="px-3 py-2 text-center">
                 {w.buffer ? (
-                  <span className="text-orange-500" title="Buffer week">
+                  <span className="text-orange-500" title={t("weeks_list.buffer_tooltip")}>
                     ⚠
                   </span>
                 ) : (

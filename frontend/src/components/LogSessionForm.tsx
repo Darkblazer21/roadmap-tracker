@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authFetch, type Week } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 interface NewSessionPayload {
   week_id: number;
@@ -16,6 +17,7 @@ export function LogSessionForm({
   weeks: Week[];
   defaultWeek: number;
 }) {
+  const t = useT();
   const qc = useQueryClient();
   const [weekId, setWeekId] = useState<number>(defaultWeek);
   const [hours, setHours] = useState<string>("2");
@@ -36,7 +38,7 @@ export function LogSessionForm({
       qc.invalidateQueries({ queryKey: ["week", weekId] });
       qc.invalidateQueries({ queryKey: ["aggregate", weekId] });
       qc.invalidateQueries({ queryKey: ["sessions", weekId] });
-      setMsg("Logged!");
+      setMsg(t("log_session.success_message"));
       setNotes("");
       setTimeout(() => setMsg(null), 2500);
     },
@@ -60,10 +62,10 @@ export function LogSessionForm({
       onSubmit={submit}
       className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3"
     >
-      <h2 className="font-semibold">Log a study session</h2>
+      <h2 className="font-semibold">{t("log_session.heading")}</h2>
 
       <label className="block">
-        <span className="text-sm text-gray-600 dark:text-gray-400">Week</span>
+        <span className="text-sm text-gray-600 dark:text-gray-400">{t("log_session.week_label")}</span>
         <select
           className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
           value={weekId}
@@ -79,7 +81,7 @@ export function LogSessionForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label>
-          <span className="text-sm">Hours</span>
+          <span className="text-sm">{t("log_session.hours_label")}</span>
           <input
             type="number"
             min={0}
@@ -90,7 +92,7 @@ export function LogSessionForm({
           />
         </label>
         <label>
-          <span className="text-sm">Minutes</span>
+          <span className="text-sm">{t("log_session.minutes_label")}</span>
           <input
             type="number"
             min={0}
@@ -103,24 +105,24 @@ export function LogSessionForm({
       </div>
 
       <label className="block">
-        <span className="text-sm">Type</span>
+        <span className="text-sm">{t("log_session.type_label")}</span>
         <select
           className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
           value={type}
           onChange={(e) => setType(e.target.value as "focus" | "pomodoro")}
         >
-          <option value="focus">Focus (manual)</option>
-          <option value="pomodoro">Pomodoro</option>
+          <option value="focus">{t("log_session.type_focus")}</option>
+          <option value="pomodoro">{t("log_session.type_pomodoro")}</option>
         </select>
       </label>
 
       <label className="block">
-        <span className="text-sm">Notes (optional)</span>
+        <span className="text-sm">{t("log_session.notes_label")}</span>
         <input
           className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="What you studied..."
+          placeholder={t("log_session.notes_placeholder")}
         />
       </label>
 
@@ -135,7 +137,7 @@ export function LogSessionForm({
         disabled={create.isPending}
         className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-2"
       >
-        {create.isPending ? "Logging..." : "Log session"}
+        {create.isPending ? t("log_session.submitting") : t("log_session.submit")}
       </button>
     </form>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import {
   Routes,
   Route,
@@ -6,21 +6,28 @@ import {
   NavLink,
   Outlet,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { authFetch, getToken, setToken } from "./lib/api";
-import LoginPage from "./pages/LoginPage";
-import WeeksListPage from "./pages/WeeksListPage";
-import WeekDetailPage from "./pages/WeekDetailPage";
-import SettingsPage from "./pages/SettingsPage";
-import DailyLogPage from "./pages/DailyLogPage";
-import SundayRecapPage from "./pages/SundayRecapPage";
-import GithubVerdictsPage from "./pages/GithubVerdictsPage";
-import DashboardPage from "./pages/DashboardPage";
+import { useT } from "./lib/i18n";
 import { PomodoroWidget } from "./components/PomodoroWidget";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PageFallback } from "./components/PageFallback";
+import { LanguageToggle } from "./components/LanguageToggle";
 
-/** AuthGate: bounces to /login when no token is stored. Reads on mount and
- * on the custom "auth:logout" event the api fires on a 401. */
+// Route-level code splitting: each page is its own JS chunk so the initial
+// bundle stays small and navigation fetches only what it needs.
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const WeeksListPage = lazy(() => import("./pages/WeeksListPage"));
+const WeekDetailPage = lazy(() => import("./pages/WeekDetailPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const DailyLogPage = lazy(() => import("./pages/DailyLogPage"));
+const SundayRecapPage = lazy(() => import("./pages/SundayRecapPage"));
+const GithubVerdictsPage = lazy(() => import("./pages/GithubVerdictsPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+
+/** AuthGate: bounces to /login when no token is stored. */
 function AuthGate() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -34,11 +41,15 @@ function AuthGate() {
 
 function Layout({ currentWeek }: { currentWeek: number | null }) {
   const navigate = useNavigate();
+  const t = useT();
 
   function logout() {
     setToken(null);
     navigate("/login", { replace: true });
   }
+
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "font-semibold text-blue-700" : "text-blue-600 hover:underline";
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -46,42 +57,38 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12">
           <div className="flex items-center gap-4">
             <NavLink to="/" className="font-bold">
-              Roadmap Tracker
+              {t("app.title")}
             </NavLink>
             {currentWeek !== null && (
               <span className="px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">
-                Current: week {currentWeek}
+                {t("app.current_week_badge", { week: currentWeek })}
               </span>
             )}
           </div>
-          <nav className="flex items-center gap-4 text-sm">
-            <NavLink to="/" className="text-blue-600 hover:underline">
-              Dashboard
-            </NavLink>
-            <NavLink to="/weeks" className="text-blue-600 hover:underline">
-              Weeks
-            </NavLink>
-            <NavLink to="/daily-log" className="text-blue-600 hover:underline">
-              Daily log
-            </NavLink>
-            <NavLink to="/recap" className="text-blue-600 hover:underline">
-              Recap
-            </NavLink>
-            <NavLink to="/github" className="text-blue-600 hover:underline">
-              GitHub
-            </NavLink>
-            <NavLink to="/settings" className="text-blue-600 hover:underline">
-              Settings
-            </NavLink>
+          <nav className="flex items-center gap-3 text-sm">
+            <NavLink to="/" className={navLinkClass}>{t("nav.dashboard")}</NavLink>
+            <NavLink to="/weeks" className={navLinkClass}>{t("nav.weeks")}</NavLink>
+            <NavLink to="/daily-log" className={navLinkClass}>{t("nav.daily_log")}</NavLink>
+            <NavLink to="/recap" className={navLinkClass}>{t("nav.recap")}</NavLink>
+            <NavLink to="/github" className={navLinkClass}>{t("nav.github")}</NavLink>
+            <NavLink to="/settings" className={navLinkClass}>{t("nav.settings")}</NavLink>
+            <span className="w-px h-5 bg-gray-300 dark:bg-gray-600" />
             <PomodoroWidget />
+            <LanguageToggle />
             <button className="text-gray-500 hover:text-gray-700" onClick={logout}>
-              Sign out
+              {t("nav.logout")}
             </button>
           </nav>
         </div>
       </header>
       <main className="flex-1">
-        <Outlet />
+        <ErrorBoundary key={useLocation().pathname}>
+          <Suspense fallback={<PageFallback />}>
+            <div className="page-fade-in">
+              <Outlet />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       </main>
     </div>
   );
@@ -90,7 +97,8 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
 function useCurrentWeek(): number | null {
   const { data } = useQuery({
     queryKey: ["current-week"],
-    queryFn: () => authFetch<{ current_week: number | null }>("/api/settings/current-week"),
+    queryFn: ({ signal }) =>
+      authFetch<{ current_week: number | null }>("/api/settings/current-week", { signal }),
     enabled: !!getToken(),
     staleTime: 60_000,
     refetchInterval: 60_000,
@@ -107,7 +115,14 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/login" element={hasToken ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          <Suspense fallback={<PageFallback label="loading.login_page" />}>
+            {hasToken ? <Navigate to="/" replace /> : <LoginPage />}
+          </Suspense>
+        }
+      />
       <Route element={<AuthGate />}>
         <Route element={<LayoutWithCurrentWeek />}>
           <Route path="/" element={<DashboardPage />} />

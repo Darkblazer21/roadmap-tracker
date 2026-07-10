@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch, type Phase, type Week } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 /**
  * GitHub verdicts page: a table of weeks × tracked repos showing
@@ -16,13 +17,26 @@ interface WeekVerdict {
 
 type VerdictMatrix = Record<string, Record<number, WeekVerdict>>;
 
-const VERDICT_META: Record<Verdict, { emoji: string; label: string; cls: string }> = {
-  on_time: { emoji: "✅", label: "On time", cls: "bg-green-100 text-green-700" },
-  late: { emoji: "⚠️", label: "Activity but late", cls: "bg-yellow-100 text-yellow-700" },
-  missing: { emoji: "❌", label: "Missing", cls: "bg-red-100 text-red-700" },
-  deferred: { emoji: "⏸", label: "Deferred", cls: "bg-gray-100 text-gray-500" },
-  future: { emoji: "—", label: "Future", cls: "bg-gray-50 text-gray-400" },
+const VERDICT_CLS: Record<Verdict, { emoji: string; cls: string }> = {
+  on_time: { emoji: "✅", cls: "bg-green-100 text-green-700" },
+  late: { emoji: "⚠️", cls: "bg-yellow-100 text-yellow-700" },
+  missing: { emoji: "❌", cls: "bg-red-100 text-red-700" },
+  deferred: { emoji: "⏸", cls: "bg-gray-100 text-gray-500" },
+  future: { emoji: "—", cls: "bg-gray-50 text-gray-400" },
 };
+
+const VERDICT_LABEL_KEY: Record<Verdict, string> = {
+  on_time: "verdict.on_time",
+  late: "verdict.late",
+  missing: "verdict.missing",
+  deferred: "verdict.deferred",
+  future: "verdict.future",
+};
+
+function verdictMeta(verdict: Verdict, t: (k: string) => string) {
+  const base = VERDICT_CLS[verdict];
+  return { emoji: base.emoji, cls: base.cls, label: t(VERDICT_LABEL_KEY[verdict]) };
+}
 
 async function fetchWeeks(): Promise<Week[]> {
   const phases = await authFetch<Phase[]>("/api/weeks");
@@ -34,6 +48,7 @@ async function fetchVerdicts(): Promise<VerdictMatrix> {
 }
 
 export default function GithubVerdictsPage() {
+  const t = useT();
   const qc = useQueryClient();
   const { data: weeks } = useQuery({ queryKey: ["phases"], queryFn: fetchWeeks });
   const { data: verdicts, isLoading } = useQuery({
@@ -63,30 +78,25 @@ export default function GithubVerdictsPage() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">GitHub on-time check</h1>
+        <h1 className="text-2xl font-bold">{t("github.heading")}</h1>
         <button
           onClick={() => sync.mutate()}
           disabled={sync.isPending}
           className="rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-4 py-2 text-sm"
         >
-          {sync.isPending ? "Syncing…" : "Sync now"}
+          {sync.isPending ? t("github.syncing") : t("github.sync_now")}
         </button>
       </div>
 
       {repos.length === 0 && (
         <p className="text-gray-500">
-          No tracked repositories yet. Add repos in{" "}
-          <a href="/settings" className="text-blue-600 underline">
-            Settings
-          </a>
-          .
+          {t("github.no_repos_message")}
         </p>
       )}
 
       {repos.length > 0 && !isLoading && verdicts && gradedWeeks.length === 0 && (
         <p className="text-gray-500">
-          No graded weeks yet. Set your start_date in Settings and sync to see
-          verdicts.
+          {t("github.no_graded_weeks_message")}
         </p>
       )}
 
@@ -96,10 +106,10 @@ export default function GithubVerdictsPage() {
             <thead>
               <tr>
                 <th className="text-left px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                  Week
+                  {t("github.col_week")}
                 </th>
                 <th className="text-left px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                  Theme
+                  {t("github.col_theme")}
                 </th>
                 {repos.map((r) => (
                   <th
@@ -128,7 +138,7 @@ export default function GithubVerdictsPage() {
                         </td>
                       );
                     }
-                    const meta = VERDICT_META[v.verdict];
+                    const meta = verdictMeta(v.verdict, t);
                     return (
                       <td key={r} className="px-3 py-2 text-center">
                         <span
@@ -150,14 +160,17 @@ export default function GithubVerdictsPage() {
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400">
-        {(Object.keys(VERDICT_META) as Verdict[]).map((k) => (
+        {(Object.keys(VERDICT_CLS) as Verdict[]).map((k) => {
+          const m = verdictMeta(k, t);
+          return (
           <span
             key={k}
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${VERDICT_META[k].cls}`}
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${m.cls}`}
           >
-            {VERDICT_META[k].emoji} {VERDICT_META[k].label}
+            {m.emoji} {m.label}
           </span>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

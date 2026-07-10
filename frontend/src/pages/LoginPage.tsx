@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { postJSON, setToken } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const t = useT();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +24,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <form
-        className="w-full max-w-sm space-y-4 rounded-2xl border border-gray-200 dark:border-gray-700 p-6"
+        className="w-full max-w-sm space-y-4 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 page-fade-in"
         onSubmit={(e) => {
           e.preventDefault();
           login.mutate();
         }}
       >
-        <h1 className="text-2xl font-bold text-center">Roadmap Tracker</h1>
-        <p className="text-sm text-gray-500 text-center">Sign in to continue</p>
+        <h1 className="text-2xl font-bold text-center">{t("app.title")}</h1>
+        <p className="text-sm text-gray-500 text-center">{t("login.subtitle")}</p>
 
         {error && (
           <div className="rounded bg-red-100 text-red-700 px-3 py-2 text-sm">
@@ -39,7 +41,7 @@ export default function LoginPage() {
 
         <label className="block">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Username
+            {t("login.username_label")}
           </span>
           <input
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -52,7 +54,7 @@ export default function LoginPage() {
 
         <label className="block">
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Password
+            {t("login.password_label")}
           </span>
           <input
             type="password"
@@ -69,7 +71,7 @@ export default function LoginPage() {
           disabled={login.isPending}
           className="w-full rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-2"
         >
-          {login.isPending ? "Signing in..." : "Sign in"}
+          {login.isPending ? t("login.submitting") : t("login.submit")}
         </button>
       </form>
     </div>

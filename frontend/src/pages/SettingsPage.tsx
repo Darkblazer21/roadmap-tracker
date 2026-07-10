@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch, patchJSON, type Settings } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 async function fetchSettings(): Promise<Settings> {
   return authFetch<Settings>("/api/settings");
 }
 
 export default function SettingsPage() {
+  const t = useT();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data, isLoading, isError } = useQuery({
@@ -24,14 +26,14 @@ export default function SettingsPage() {
     onSuccess: (updated) => {
       setForm(null);
       qc.setQueryData(["settings"], updated);
-      setSavedMsg("Saved");
+      setSavedMsg(t("settings.saved_message"));
       setTimeout(() => setSavedMsg(null), 2500);
     },
   });
 
-  if (isLoading) return <div className="p-8 text-gray-500">Loading settings...</div>;
+  if (isLoading) return <div className="p-8 text-gray-500">{t("settings.loading")}</div>;
   if (isError || !data)
-    return <div className="p-8 text-red-600">Failed to load settings.</div>;
+    return <div className="p-8 text-red-600">{t("settings.error")}</div>;
 
   const editing = form ?? {};
   const start_date: string = editing.start_date !== undefined
@@ -54,10 +56,10 @@ export default function SettingsPage() {
         onClick={() => navigate("/")}
         className="text-blue-600 hover:underline text-sm"
       >
-        ← Back to dashboard
+        {t("settings.back_link")}
       </button>
 
-      <h1 className="text-2xl font-bold">Settings</h1>
+      <h1 className="text-2xl font-bold">{t("settings.heading")}</h1>
 
       {savedMsg && (
         <div className="rounded bg-green-100 text-green-700 px-3 py-2 text-sm">
@@ -66,10 +68,10 @@ export default function SettingsPage() {
       )}
 
       <section className="space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-        <h2 className="font-semibold">Timeline anchor</h2>
+        <h2 className="font-semibold">{t("settings.timeline_anchor_heading")}</h2>
         <label className="block">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            Start date (week 1 begins here)
+            {t("settings.start_date_label")}
           </span>
           <input
             type="date"
@@ -79,16 +81,15 @@ export default function SettingsPage() {
           />
         </label>
         <p className="text-xs text-gray-500">
-          Setting this enables the "current week" highlight on the dashboard and
-          powers the GitHub on-time verdicts (M6+).
+          {t("settings.start_date_help")}
         </p>
       </section>
 
       <section className="space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-        <h2 className="font-semibold">Weekly hours target</h2>
+        <h2 className="font-semibold">{t("settings.weekly_target_heading")}</h2>
         <div className="flex gap-4">
           <label className="flex-1">
-            <span className="text-sm">Min hours/week</span>
+            <span className="text-sm">{t("settings.min_hours_label")}</span>
             <input
               type="number"
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -97,7 +98,7 @@ export default function SettingsPage() {
             />
           </label>
           <label className="flex-1">
-            <span className="text-sm">Max hours/week</span>
+            <span className="text-sm">{t("settings.max_hours_label")}</span>
             <input
               type="number"
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -109,10 +110,10 @@ export default function SettingsPage() {
       </section>
 
       <section className="space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-        <h2 className="font-semibold">Pomodoro defaults</h2>
+        <h2 className="font-semibold">{t("settings.pomo_defaults_heading")}</h2>
         <div className="grid grid-cols-3 gap-4">
           <label>
-            <span className="text-sm">Work (min)</span>
+            <span className="text-sm">{t("settings.pomo_work_label")}</span>
             <input
               type="number"
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -121,7 +122,7 @@ export default function SettingsPage() {
             />
           </label>
           <label>
-            <span className="text-sm">Short break</span>
+            <span className="text-sm">{t("settings.pomo_short_break_label")}</span>
             <input
               type="number"
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -130,7 +131,7 @@ export default function SettingsPage() {
             />
           </label>
           <label>
-            <span className="text-sm">Long break</span>
+            <span className="text-sm">{t("settings.pomo_long_break_label")}</span>
             <input
               type="number"
               className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -140,16 +141,15 @@ export default function SettingsPage() {
           </label>
         </div>
         <p className="text-xs text-gray-500">
-          Cycle: 25/5 ×4 → 15 min long break. The 2-hour marathon break after the
-          8th cycle is fixed by design and not editable here.
+          {t("settings.pomo_help")}
         </p>
       </section>
 
       <section className="space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-        <h2 className="font-semibold">GitHub tracked repositories</h2>
+        <h2 className="font-semibold">{t("settings.github_repos_heading")}</h2>
         <label className="block">
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            One repo per line, format owner/repo (e.g. kingbrems/roadmap-tracker)
+            {t("settings.github_repos_help")}
           </span>
           <textarea
             rows={3}
@@ -185,7 +185,7 @@ export default function SettingsPage() {
         disabled={save.isPending || !form}
         className="rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-6 py-2"
       >
-        {save.isPending ? "Saving..." : "Save settings"}
+        {save.isPending ? t("settings.saving") : t("settings.save")}
       </button>
     </div>
   );

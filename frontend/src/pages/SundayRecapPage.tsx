@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authFetch, type Phase, type Week } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 interface RecapDraft {
   week_id: number;
@@ -31,6 +32,7 @@ async function fetchSaved(weekId: number): Promise<Recap | null> {
 }
 
 export default function SundayRecapPage() {
+  const t = useT();
   const qc = useQueryClient();
   const [weekId, setWeekId] = useState<number>(1);
   const [successes, setSuccesses] = useState<string>("");
@@ -79,15 +81,15 @@ export default function SundayRecapPage() {
 
   function copyMarkdown() {
     const md = [
-      `## Recap — semaine ${weekId}`,
+      t("recap.md_heading", { weekId }),
       "",
-      "**Succès**",
+      t("recap.md_successes"),
       successes,
       "",
-      "**Blocages**",
+      t("recap.md_blockers"),
       blockers,
       "",
-      "**Prochaine étape**",
+      t("recap.md_next_step"),
       nextStep,
     ].join("\n");
     navigator.clipboard.writeText(md);
@@ -97,10 +99,10 @@ export default function SundayRecapPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Sunday recap</h1>
+      <h1 className="text-2xl font-bold">{t("recap.heading")}</h1>
 
       <label className="block">
-        <span className="text-sm">Week</span>
+        <span className="text-sm">{t("recap.week_label")}</span>
         <select
           className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
           value={weekId}
@@ -120,26 +122,26 @@ export default function SundayRecapPage() {
           disabled={generate.isPending}
           className="rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold px-4 py-2"
         >
-          {generate.isPending ? "Drafting..." : "Generate draft"}
+          {generate.isPending ? t("recap.generating") : t("recap.generate")}
         </button>
         <button
           onClick={copyMarkdown}
           className="rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200 font-semibold px-4 py-2"
         >
-          {copied ? "Copied!" : "Copy as Markdown"}
+          {copied ? t("recap.copied") : t("recap.copy_markdown")}
         </button>
         <button
           onClick={() => save.mutate()}
           disabled={save.isPending}
           className="rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold px-4 py-2"
         >
-          {save.isPending ? "Saving..." : "Save recap"}
+          {save.isPending ? t("recap.saving") : t("recap.save")}
         </button>
       </div>
 
       <div className="space-y-3">
         <label className="block">
-          <span className="text-sm font-semibold">Succès</span>
+          <span className="text-sm font-semibold">{t("recap.successes_label")}</span>
           <textarea
             rows={3}
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -148,7 +150,7 @@ export default function SundayRecapPage() {
           />
         </label>
         <label className="block">
-          <span className="text-sm font-semibold">Blocages</span>
+          <span className="text-sm font-semibold">{t("recap.blockers_label")}</span>
           <textarea
             rows={2}
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -157,7 +159,7 @@ export default function SundayRecapPage() {
           />
         </label>
         <label className="block">
-          <span className="text-sm font-semibold">Prochaine étape</span>
+          <span className="text-sm font-semibold">{t("recap.next_step_label")}</span>
           <textarea
             rows={2}
             className="mt-1 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2"
@@ -169,7 +171,7 @@ export default function SundayRecapPage() {
 
       {saved?.updated_at && (
         <p className="text-xs text-gray-500">
-          Last saved: {saved.updated_at}
+          {t("recap.last_saved", { date: saved.updated_at })}
         </p>
       )}
     </div>
