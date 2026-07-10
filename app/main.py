@@ -16,11 +16,13 @@ from app.config import settings
 from app.db import async_session_factory, engine
 from app.models.user import User
 from app.models.week import Week
-from app.routers import weeks as weeks_router
 from app.routers import auth as auth_router
-from app.routers import settings as settings_router
-from app.routers import sessions as sessions_router
+from app.routers import daily_logs as daily_logs_router
 from app.routers import pomodoro as pomodoro_router
+from app.routers import recaps as recaps_router
+from app.routers import sessions as sessions_router
+from app.routers import settings as settings_router
+from app.routers import weeks as weeks_router
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,8 @@ app.include_router(auth_router.router)
 app.include_router(settings_router.router)
 app.include_router(sessions_router.router)
 app.include_router(pomodoro_router.router)
+app.include_router(daily_logs_router.router)
+app.include_router(recaps_router.router)
 
 
 @app.get("/health")

@@ -13,6 +13,8 @@ import LoginPage from "./pages/LoginPage";
 import WeeksListPage from "./pages/WeeksListPage";
 import WeekDetailPage from "./pages/WeekDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import DailyLogPage from "./pages/DailyLogPage";
+import SundayRecapPage from "./pages/SundayRecapPage";
 import { PomodoroWidget } from "./components/PomodoroWidget";
 
 /** AuthGate: bounces to /login when no token is stored. Reads on mount and
@@ -53,6 +55,12 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
           <nav className="flex items-center gap-4 text-sm">
             <NavLink to="/" className="text-blue-600 hover:underline">
               Weeks
+            </NavLink>
+            <NavLink to="/daily-log" className="text-blue-600 hover:underline">
+              Daily log
+            </NavLink>
+            <NavLink to="/recap" className="text-blue-600 hover:underline">
+              Recap
             </NavLink>
             <NavLink to="/settings" className="text-blue-600 hover:underline">
               Settings
@@ -96,6 +104,8 @@ export default function App() {
         <Route element={<LayoutWithCurrentWeek />}>
           <Route path="/" element={<WeeksListPage />} />
           <Route path="/weeks/:number" element={<WeekDetailPage />} />
+          <Route path="/daily-log" element={<DailyLogPage />} />
+          <Route path="/recap" element={<SundayRecapPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
