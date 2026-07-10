@@ -20,6 +20,7 @@ from app.routers import weeks as weeks_router
 from app.routers import auth as auth_router
 from app.routers import settings as settings_router
 from app.routers import sessions as sessions_router
+from app.routers import pomodoro as pomodoro_router
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await _seed_settings(session)
 
     yield
-    # Shutdown hook: close the async engine cleanly.
+    # Shutdown hook: close the async engine + Redis cleanly.
+    from app.services.redis_client import close_redis
+
+    await close_redis()
     await engine.dispose()
 
 
@@ -95,6 +99,7 @@ app.include_router(weeks_router.router)
 app.include_router(auth_router.router)
 app.include_router(settings_router.router)
 app.include_router(sessions_router.router)
+app.include_router(pomodoro_router.router)
 
 
 @app.get("/health")

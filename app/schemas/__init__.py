@@ -2,6 +2,7 @@
 
 from app.schemas.auth import LoginRequest, TokenOut, UserOut
 from app.schemas.phase import PhaseOut, PhaseWithWeeks
+from app.schemas.pomodoro import PomoStart, PomoStateView
 from app.schemas.session import SessionCreate, SessionOut, WeekAggregate
 from app.schemas.settings import SettingsOut, SettingsPatch
 from app.schemas.week import WeekOut, WeekPatch
@@ -19,4 +20,6 @@ __all__ = [
     "SessionCreate",
     "SessionOut",
     "WeekAggregate",
+    "PomoStart",
+    "PomoStateView",
 ]

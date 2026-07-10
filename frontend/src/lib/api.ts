@@ -120,8 +120,8 @@ export interface Settings {
   pomo_short_break_min: number;
   pomo_long_break_min: number;
   pomo_marathon_break_min: number;
-  pomo_cycles_per_short_set: number;
-  pomo_cycles_per_long_break: number;
+  pomo_cycles_per_set: number;
+  pomo_cycles_per_marathon: number;
   weekly_target_min: number;
   weekly_target_max: number;
 }

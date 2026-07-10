@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import WeeksListPage from "./pages/WeeksListPage";
 import WeekDetailPage from "./pages/WeekDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import { PomodoroWidget } from "./components/PomodoroWidget";
 
 /** AuthGate: bounces to /login when no token is stored. Reads on mount and
  * on the custom "auth:logout" event the api fires on a 401. */
@@ -56,6 +57,7 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
             <NavLink to="/settings" className="text-blue-600 hover:underline">
               Settings
             </NavLink>
+            <PomodoroWidget />
             <button className="text-gray-500 hover:text-gray-700" onClick={logout}>
               Sign out
             </button>

@@ -18,8 +18,8 @@ class SettingsOut(BaseModel):
     pomo_short_break_min: int
     pomo_long_break_min: int
     pomo_marathon_break_min: int
-    pomo_cycles_per_short_set: int
-    pomo_cycles_per_long_break: int
+    pomo_cycles_per_set: int
+    pomo_cycles_per_marathon: int
     weekly_target_min: int
     weekly_target_max: int
 
@@ -32,7 +32,7 @@ class SettingsPatch(BaseModel):
     pomo_short_break_min: int | None = Field(default=None, ge=1, le=60)
     pomo_long_break_min: int | None = Field(default=None, ge=1, le=120)
     pomo_marathon_break_min: int | None = Field(default=None, ge=1, le=240)
-    pomo_cycles_per_short_set: int | None = Field(default=None, ge=1, le=12)
-    pomo_cycles_per_long_break: int | None = Field(default=None, ge=1, le=24)
+    pomo_cycles_per_set: int | None = Field(default=None, ge=1, le=12)
+    pomo_cycles_per_marathon: int | None = Field(default=None, ge=1, le=24)
     weekly_target_min: int | None = Field(default=None, ge=0, le=80)
     weekly_target_max: int | None = Field(default=None, ge=0, le=80)

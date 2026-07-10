@@ -38,8 +38,8 @@ class AppSettings(Base):
     pomo_short_break_min: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
     pomo_long_break_min: Mapped[int] = mapped_column(Integer, nullable=False, default=15)
     pomo_marathon_break_min: Mapped[int] = mapped_column(Integer, nullable=False, default=120)
-    pomo_cycles_per_short_set: Mapped[int] = mapped_column(Integer, nullable=False, default=4)
-    pomo_cycles_per_long_break: Mapped[int] = mapped_column(Integer, nullable=False, default=8)
+    pomo_cycles_per_set: Mapped[int] = mapped_column(Integer, nullable=False, default=4)
+    pomo_cycles_per_marathon: Mapped[int] = mapped_column(Integer, nullable=False, default=8)
 
     # Weekly hour target range (independent of per-week roadmap ranges).
     weekly_target_min: Mapped[int] = mapped_column(Integer, nullable=False, default=15)
