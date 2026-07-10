@@ -6,8 +6,9 @@ seeder can see them.
 """
 
 from app.models.phase import Phase
+from app.models.session import Session
 from app.models.settings import AppSettings
 from app.models.user import User
 from app.models.week import Week
 
-__all__ = ["Phase", "Week", "User", "AppSettings"]
+__all__ = ["Phase", "Week", "User", "AppSettings", "Session"]

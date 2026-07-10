@@ -96,6 +96,21 @@ export interface Phase {
   weeks: Week[];
 }
 
+export interface WeekAggregate {
+  week_id: number;
+  total_sec: number;
+  total_hours: number;
+  by_type: Record<string, number>;
+  by_day: Record<string, number>;
+  session_count: number;
+  hours_min: number;
+  hours_max: number;
+  actual_hours: number;
+  over_cap: boolean;
+  under_min: boolean;
+  in_range: boolean;
+}
+
 export interface Settings {
   id: number;
   start_date: string | null;

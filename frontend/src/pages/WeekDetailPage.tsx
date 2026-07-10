@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { authFetch, type Week } from "../lib/api";
+import { authFetch, type Phase, type Week } from "../lib/api";
+import { LogSessionForm } from "../components/LogSessionForm";
+import { WeekHoursBar } from "../components/WeekHoursBar";
 
 const STATUS_LABELS: Record<string, string> = {
   not_started: "Not started",
@@ -14,6 +16,11 @@ async function fetchWeek(number: number): Promise<Week> {
   return authFetch<Week>(`/api/weeks/${number}`);
 }
 
+async function fetchAllWeeks(): Promise<Week[]> {
+  const phases = await authFetch<Phase[]>("/api/weeks");
+  return phases.flatMap((p) => p.weeks);
+}
+
 export default function WeekDetailPage() {
   const navigate = useNavigate();
   const { number = "0" } = useParams<{ number: string }>();
@@ -23,6 +30,10 @@ export default function WeekDetailPage() {
     queryKey: ["week", weekNumber],
     queryFn: () => fetchWeek(weekNumber),
     enabled: weekNumber > 0,
+  });
+  const { data: allWeeks } = useQuery({
+    queryKey: ["phases"],
+    queryFn: fetchAllWeeks,
   });
 
   if (isLoading)
@@ -96,6 +107,13 @@ export default function WeekDetailPage() {
           </div>
         )}
       </div>
+
+      {/* M3: hours visualization + manual log form */}
+      <WeekHoursBar weekId={weekNumber} />
+
+      {allWeeks && allWeeks.length > 0 && (
+        <LogSessionForm weeks={allWeeks} defaultWeek={weekNumber} />
+      )}
     </div>
   );
 }

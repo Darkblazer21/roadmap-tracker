@@ -19,6 +19,7 @@ from app.models.week import Week
 from app.routers import weeks as weeks_router
 from app.routers import auth as auth_router
 from app.routers import settings as settings_router
+from app.routers import sessions as sessions_router
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,7 @@ app.add_middleware(
 app.include_router(weeks_router.router)
 app.include_router(auth_router.router)
 app.include_router(settings_router.router)
+app.include_router(sessions_router.router)
 
 
 @app.get("/health")
