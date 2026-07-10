@@ -16,6 +16,7 @@ import SettingsPage from "./pages/SettingsPage";
 import DailyLogPage from "./pages/DailyLogPage";
 import SundayRecapPage from "./pages/SundayRecapPage";
 import GithubVerdictsPage from "./pages/GithubVerdictsPage";
+import DashboardPage from "./pages/DashboardPage";
 import { PomodoroWidget } from "./components/PomodoroWidget";
 
 /** AuthGate: bounces to /login when no token is stored. Reads on mount and
@@ -55,6 +56,9 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
           </div>
           <nav className="flex items-center gap-4 text-sm">
             <NavLink to="/" className="text-blue-600 hover:underline">
+              Dashboard
+            </NavLink>
+            <NavLink to="/weeks" className="text-blue-600 hover:underline">
               Weeks
             </NavLink>
             <NavLink to="/daily-log" className="text-blue-600 hover:underline">
@@ -106,7 +110,8 @@ export default function App() {
       <Route path="/login" element={hasToken ? <Navigate to="/" replace /> : <LoginPage />} />
       <Route element={<AuthGate />}>
         <Route element={<LayoutWithCurrentWeek />}>
-          <Route path="/" element={<WeeksListPage />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/weeks" element={<WeeksListPage />} />
           <Route path="/weeks/:number" element={<WeekDetailPage />} />
           <Route path="/daily-log" element={<DailyLogPage />} />
           <Route path="/recap" element={<SundayRecapPage />} />

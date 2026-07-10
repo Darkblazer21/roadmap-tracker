@@ -18,6 +18,8 @@ from app.models.user import User
 from app.models.week import Week
 from app.routers import auth as auth_router
 from app.routers import daily_logs as daily_logs_router
+from app.routers import dashboard as dashboard_router
+from app.routers import export as export_router
 from app.routers import github as github_router
 from app.routers import pomodoro as pomodoro_router
 from app.routers import recaps as recaps_router
@@ -113,6 +115,8 @@ app.include_router(pomodoro_router.router)
 app.include_router(daily_logs_router.router)
 app.include_router(recaps_router.router)
 app.include_router(github_router.router)
+app.include_router(dashboard_router.router)
+app.include_router(export_router.router)
 
 
 @app.get("/health")
