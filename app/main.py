@@ -4,8 +4,8 @@ M0 scope: health check + CORS + lifespan placeholder for the scheduler that
 will be added in M6. Routers are mounted incrementally from M1 onward.
 """
 
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,7 +14,7 @@ from app.config import settings
 
 
 @asynccontextmanager
-def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # M6 will start the APScheduler here (nightly GitHub sync).
     # M1 will run the roadmap importer to seed the database on first boot.
     yield
