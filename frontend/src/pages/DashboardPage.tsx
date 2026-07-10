@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { authFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { PageFallback } from "../components/PageFallback";
 
 interface DashboardData {
   calendar_week: number | null;
@@ -51,15 +52,17 @@ const DEVIATION_STYLES: Record<string, string> = {
 
 export default function DashboardPage() {
   const t = useT();
-  const { data, isLoading, isError } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["dashboard"],
     queryFn: fetchDashboard,
     staleTime: 60_000,
   });
 
-  if (isLoading) return <div className="p-8 text-gray-500">{t("dashboard.loading")}</div>;
-  if (isError || !data)
-    return <div className="p-8 text-red-600">{t("dashboard.error")}</div>;
+  if (!data) {
+    if (isError)
+      return <div className="p-8 text-red-600">{t("dashboard.error")}</div>;
+    return <PageFallback label={t("dashboard.loading")} />;
+  }
 
   const dev = data.deviation;
   const wk = data.this_week;
@@ -68,13 +71,22 @@ export default function DashboardPage() {
       ? Math.round((data.week_counts.done / data.week_counts.total) * 100)
       : 0;
 
+  // Translate deviation message on the frontend using the status field,
+  // interpolating calendar_week (cal) and first_incomplete_week (first).
+  const deviationParams = {
+    cal: dev.calendar_week ?? "?",
+    first: dev.first_incomplete_week ?? "?",
+    gap: Math.abs(dev.gap),
+  };
+  const deviationMsg = t(`deviation.${dev.status}`, deviationParams);
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">{t("dashboard.heading")}</h1>
 
       {/* Deviation banner */}
       <div className={`rounded-xl border p-4 ${DEVIATION_STYLES[dev.status] ?? DEVIATION_STYLES.unknown}`}>
-        <p className="font-medium">{dev.message}</p>
+        <p className="font-medium">{deviationMsg}</p>
       </div>
 
       {/* Cards */}

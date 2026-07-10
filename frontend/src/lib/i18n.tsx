@@ -238,6 +238,21 @@ const en: Dict = {
     "One repo per line, format owner/repo (e.g. kingbrems/roadmap-tracker)",
   "settings.saving": "Saving…",
   "settings.save": "Save settings",
+  "settings.reset_heading": "Danger zone",
+  "settings.reset_description": "Delete all sessions, daily logs, recaps, and reset every week to \"not started\". The start date, pomodoro config, and tracked repos are preserved.",
+  "settings.reset_confirm": "Are you sure? This cannot be undone.",
+  "settings.resetting": "Resetting…",
+  "settings.reset": "Reset all progress",
+  "settings.reset_done": "All progress has been reset.",
+
+  // Deviation messages (translated on the frontend from backend status)
+  "deviation.on_track": "You're on track — calendar week {cal}, working on week {first}.",
+  "deviation.buffer": "{gap} week(s) behind, but you're in a known buffer zone — keep going.",
+  "deviation.slight_delay": "Slight delay — {gap} week(s) behind the calendar (week {first} vs cal {cal}).",
+  "deviation.behind": "⚠ {gap} week(s) behind plan (week {first} vs calendar week {cal}). Consider using a buffer week or adjusting pace.",
+  "deviation.not_started": "Your roadmap hasn't started yet.",
+  "deviation.complete": "All weeks are done — congratulations!",
+  "deviation.unknown": "Set your start_date in Settings to enable deviation tracking.",
 };
 
 const fr: Dict = {
@@ -450,6 +465,21 @@ const fr: Dict = {
     "Un dépôt par ligne, format owner/repo (ex. kingbrems/roadmap-tracker)",
   "settings.saving": "Enregistrement…",
   "settings.save": "Enregistrer les réglages",
+  "settings.reset_heading": "Zone de danger",
+  "settings.reset_description": "Supprime toutes les sessions, journaux, récaps et réinitialise toutes les semaines à « non commencée ». La date de début, la configuration pomodoro et les dépôts suivis sont conservés.",
+  "settings.reset_confirm": "Êtes-vous sûr ? Cette action est irréversible.",
+  "settings.resetting": "Réinitialisation…",
+  "settings.reset": "Réinitialiser toute la progression",
+  "settings.reset_done": "Toute la progression a été réinitialisée.",
+
+  // Deviation messages
+  "deviation.on_track": "Vous êtes dans les temps — semaine calendaire {cal}, en cours sur la semaine {first}.",
+  "deviation.buffer": "{gap} semaine(s) de retard, mais vous êtes dans une zone tampon connue — continuez.",
+  "deviation.slight_delay": "Léger retard — {gap} semaine(s) de retard (semaine {first} vs cal {cal}).",
+  "deviation.behind": "⚠ {gap} semaine(s) de retard sur le planning (semaine {first} vs semaine calendaire {cal}). Envisagez d'utiliser une semaine tampon ou d'ajuster le rythme.",
+  "deviation.not_started": "Votre parcours n'a pas encore commencé.",
+  "deviation.complete": "Toutes les semaines sont terminées — félicitations !",
+  "deviation.unknown": "Configurez votre date de début dans les Réglages pour activer le suivi de déviation.",
 };
 
 const DICTS: Record<Lang, Dict> = { en, fr };

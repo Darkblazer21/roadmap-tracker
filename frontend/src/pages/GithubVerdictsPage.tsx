@@ -40,7 +40,7 @@ function verdictMeta(verdict: Verdict, t: (k: string) => string) {
 
 async function fetchWeeks(): Promise<Week[]> {
   const phases = await authFetch<Phase[]>("/api/weeks");
-  return phases.flatMap((p) => p.weeks);
+  return phases.flatMap((p) => p.weeks ?? []);
 }
 
 async function fetchVerdicts(): Promise<VerdictMatrix> {

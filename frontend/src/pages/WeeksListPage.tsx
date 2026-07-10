@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { authFetch, type Phase, type Week } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { PageFallback } from "../components/PageFallback";
 
 async function fetchPhases(): Promise<Phase[]> {
   return authFetch<Phase[]>("/api/weeks");
@@ -10,15 +11,16 @@ async function fetchPhases(): Promise<Phase[]> {
 export default function WeeksListPage() {
   const navigate = useNavigate();
   const t = useT();
-  const { data, isLoading, isError } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["phases"],
     queryFn: fetchPhases,
   });
 
-  if (isLoading)
-    return <div className="p-8 text-gray-500">{t("weeks_list.loading")}</div>;
-  if (isError)
-    return <div className="p-8 text-red-600">{t("weeks_list.error")}</div>;
+  if (!data) {
+    if (isError)
+      return <div className="p-8 text-red-600">{t("weeks_list.error")}</div>;
+    return <PageFallback label={t("weeks_list.loading")} />;
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-4">
@@ -27,7 +29,7 @@ export default function WeeksListPage() {
         {t("weeks_list.help_text")}
       </p>
 
-      {data!.map((phase) => (
+      {data.map((phase) => (
         <PhaseAccordion key={phase.id} phase={phase} onWeekClick={(n) => navigate(`/weeks/${n}`)} />
       ))}
     </div>
