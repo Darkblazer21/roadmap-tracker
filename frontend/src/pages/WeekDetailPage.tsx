@@ -1,17 +1,13 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { authFetch, type Phase, type Week } from "../lib/api";
+import { authFetch, fetchAllWeeks, type Week } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { LogSessionForm } from "../components/LogSessionForm";
 import { WeekHoursBar } from "../components/WeekHoursBar";
+import { PageFallback } from "../components/PageFallback";
 
 async function fetchWeek(number: number): Promise<Week> {
   return authFetch<Week>(`/api/weeks/${number}`);
-}
-
-async function fetchAllWeeks(): Promise<Week[]> {
-  const phases = await authFetch<Phase[]>("/api/weeks");
-  return phases.flatMap((p) => p.weeks);
 }
 
 export default function WeekDetailPage() {
@@ -24,20 +20,21 @@ export default function WeekDetailPage() {
     return t(`status.${status}`);
   }
 
-  const { data: week, isLoading, isError } = useQuery({
+  const { data: week, isError } = useQuery({
     queryKey: ["week", weekNumber],
     queryFn: () => fetchWeek(weekNumber),
     enabled: weekNumber > 0,
   });
   const { data: allWeeks } = useQuery({
-    queryKey: ["phases"],
+    queryKey: ["all-weeks"],
     queryFn: fetchAllWeeks,
   });
 
-  if (isLoading)
-    return <div className="p-8 text-gray-500">{t("week_detail.loading")}</div>;
-  if (isError || !week)
-    return <div className="p-8 text-red-600">{t("week_detail.error_not_found")}</div>;
+  if (!week) {
+    if (isError)
+      return <div className="p-8 text-red-600">{t("week_detail.error_not_found")}</div>;
+    return <PageFallback label={t("week_detail.loading")} />;
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-4">

@@ -71,7 +71,7 @@ export function LogSessionForm({
           value={weekId}
           onChange={(e) => setWeekId(parseInt(e.target.value, 10))}
         >
-          {weeks.map((w) => (
+          {(weeks ?? []).map((w) => (
             <option key={w.number} value={w.number}>
               #{w.number} — {w.theme.slice(0, 50)}
             </option>

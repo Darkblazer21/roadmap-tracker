@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { authFetch, type Phase, type Week } from "../lib/api";
+import { authFetch, fetchAllWeeks } from "../lib/api";
 import { useT } from "../lib/i18n";
 
 /**
@@ -38,11 +38,6 @@ function verdictMeta(verdict: Verdict, t: (k: string) => string) {
   return { emoji: base.emoji, cls: base.cls, label: t(VERDICT_LABEL_KEY[verdict]) };
 }
 
-async function fetchWeeks(): Promise<Week[]> {
-  const phases = await authFetch<Phase[]>("/api/weeks");
-  return phases.flatMap((p) => p.weeks ?? []);
-}
-
 async function fetchVerdicts(): Promise<VerdictMatrix> {
   return authFetch<VerdictMatrix>("/api/github/verdicts");
 }
@@ -50,7 +45,7 @@ async function fetchVerdicts(): Promise<VerdictMatrix> {
 export default function GithubVerdictsPage() {
   const t = useT();
   const qc = useQueryClient();
-  const { data: weeks } = useQuery({ queryKey: ["phases"], queryFn: fetchWeeks });
+  const { data: weeks } = useQuery({ queryKey: ["all-weeks"], queryFn: fetchAllWeeks });
   const { data: verdicts, isLoading } = useQuery({
     queryKey: ["github-verdicts"],
     queryFn: fetchVerdicts,

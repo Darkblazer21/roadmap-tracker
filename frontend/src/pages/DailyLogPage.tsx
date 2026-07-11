@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { authFetch, type Phase, type Week } from "../lib/api";
+import { authFetch, fetchAllWeeks } from "../lib/api";
 import { useT } from "../lib/i18n";
-
-/**
- * Daily log page: today-by-default form + scrollable history of logs for the
- * selected week. Uses an upsert endpoint so re-submitting a date replaces it.
- */
 
 interface DailyLog {
   id: number;
@@ -16,11 +11,6 @@ interface DailyLog {
   learned: string | null;
   blockers: string | null;
   hours_override: number | null;
-}
-
-async function fetchWeeks(): Promise<Week[]> {
-  const phases = await authFetch<Phase[]>("/api/weeks");
-  return phases.flatMap((p) => p.weeks);
 }
 
 async function fetchLogs(weekId: number): Promise<DailyLog[]> {
@@ -41,7 +31,7 @@ export default function DailyLogPage() {
   const [blockers, setBlockers] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
 
-  const { data: weeks } = useQuery({ queryKey: ["phases"], queryFn: fetchWeeks });
+  const { data: weeks } = useQuery({ queryKey: ["all-weeks"], queryFn: fetchAllWeeks });
   const { data: logs } = useQuery({
     queryKey: ["daily-logs", weekId],
     queryFn: () => fetchLogs(weekId),

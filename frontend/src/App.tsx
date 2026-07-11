@@ -42,6 +42,10 @@ function AuthGate() {
 function Layout({ currentWeek }: { currentWeek: number | null }) {
   const navigate = useNavigate();
   const t = useT();
+  // Call useLocation at the top level (rules of hooks) — used for the
+  // ErrorBoundary key (reset error state on route change) and the fade-in
+  // wrapper key (replay CSS animation on each navigation).
+  const location = useLocation();
 
   function logout() {
     setToken(null);
@@ -82,9 +86,16 @@ function Layout({ currentWeek }: { currentWeek: number | null }) {
         </div>
       </header>
       <main className="flex-1">
-        <ErrorBoundary key={useLocation().pathname}>
+        {/* key={pathname} resets the ErrorBoundary on every route change
+            so a crash on page A doesn't leave a broken state when the user
+            navigates to page B. */}
+        <ErrorBoundary key={location.pathname}>
           <Suspense fallback={<PageFallback />}>
-            <div className="page-fade-in">
+            {/* key={pathname} forces React to remount this div on each
+                navigation, replaying the page-fade-in CSS animation. Without
+                this key, the animation only plays once (on initial mount) and
+                subsequent route changes have no visible transition. */}
+            <div key={location.pathname} className="page-fade-in">
               <Outlet />
             </div>
           </Suspense>

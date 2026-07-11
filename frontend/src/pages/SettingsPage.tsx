@@ -26,8 +26,19 @@ export default function SettingsPage() {
     mutationFn: () =>
       authFetch("/api/settings/reset", { method: "POST" }),
     onSuccess: () => {
-      // Nuke every cached query so stale data doesn't linger.
-      qc.clear();
+      // Invalidate every query that depends on user-generated data.
+      // We don't use qc.clear() because that would also nuke settings and
+      // auth queries, causing a re-fetch storm. Targeted invalidation is
+      // cleaner and avoids triggering the loading state on the settings form.
+      qc.invalidateQueries({ queryKey: ["phases"] });
+      qc.invalidateQueries({ queryKey: ["all-weeks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["daily-logs"] });
+      qc.invalidateQueries({ queryKey: ["recap"] });
+      qc.invalidateQueries({ queryKey: ["pomo"] });
+      qc.invalidateQueries({ queryKey: ["aggregate"] });
+      qc.invalidateQueries({ queryKey: ["sessions"] });
+      qc.invalidateQueries({ queryKey: ["github-verdicts"] });
       setShowResetConfirm(false);
       setSavedMsg(t("settings.reset_done"));
       setTimeout(() => setSavedMsg(null), 4000);

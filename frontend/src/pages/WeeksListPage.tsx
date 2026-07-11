@@ -1,12 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { authFetch, type Phase, type Week } from "../lib/api";
+import { fetchPhases, type Phase, type Week } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { PageFallback } from "../components/PageFallback";
-
-async function fetchPhases(): Promise<Phase[]> {
-  return authFetch<Phase[]>("/api/weeks");
-}
 
 export default function WeeksListPage() {
   const navigate = useNavigate();

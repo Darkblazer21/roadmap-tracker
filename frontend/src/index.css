@@ -11,11 +11,14 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Smooth fade-in for each freshly loaded route. */
+/* Smooth fade-in for each freshly loaded route. The duration is 0.28s with
+   a slightly larger translateY (8px) so the transition is perceptible without
+   feeling sluggish. Triggered by the key={pathname} on the wrapper div in
+   App.tsx, which forces React to remount the div on every route change. */
 @keyframes page-fade-in {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -24,5 +27,5 @@ body {
 }
 
 .page-fade-in {
-  animation: page-fade-in 0.18s ease-out;
+  animation: page-fade-in 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
 }

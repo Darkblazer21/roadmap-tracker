@@ -90,6 +90,20 @@ export async function patchJSON<T = unknown>(url: string, body: unknown): Promis
   return authFetch<T>(url, { method: "PATCH", body: JSON.stringify(body) });
 }
 
+// --- shared fetchers (single canonical copy with safe access guards) --- //
+
+/** Fetch phases with their weeks (nested Phase[] shape). Used by WeeksListPage. */
+export async function fetchPhases(): Promise<Phase[]> {
+  return authFetch<Phase[]>("/api/weeks");
+}
+
+/** Fetch a flat Week[] list by flattening phases. The `?? []` guard ensures
+ *  we never crash even if a phase object arrives without a `weeks` array. */
+export async function fetchAllWeeks(): Promise<Week[]> {
+  const phases = await authFetch<Phase[]>("/api/weeks");
+  return phases.flatMap((p) => p.weeks ?? []);
+}
+
 // --- shared type aliases (mirror backend Pydantic schemas) ---
 
 export type WeekStatus =
