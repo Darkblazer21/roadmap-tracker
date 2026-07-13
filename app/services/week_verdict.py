@@ -60,12 +60,12 @@ async def compute_verdicts(
         return {repo: {} for repo in repos}
 
     start = settings.start_date
-    today = date.today()
+    tz = settings.timezone
 
-    # Calendar current week
+    # Calendar current week (evaluated in the user's configured timezone).
     from app.services.week_clock import current_week_number
 
-    cal_week = current_week_number(start, today) or 0
+    cal_week = current_week_number(start, tz=tz) or 0
 
     # Collect events per repo.
     result: dict[str, dict[int, dict[str, object]]] = {repo: {} for repo in repos}
@@ -79,7 +79,7 @@ async def compute_verdicts(
     for ev in events:
         if ev.repo not in result:
             continue
-        week_n = _week_number_for(ev, start)
+        week_n = _week_number_for(ev, start, tz)
         if week_n is not None:
             per_repo_week_events[ev.repo][week_n].append(ev)
 
@@ -93,7 +93,7 @@ async def compute_verdicts(
         for n in range(1, cal_week + 1):
             if n not in plan_week_numbers:
                 continue
-            window_start, window_end = week_window(n, start)
+            window_start, window_end = week_window(n, start, tz)
             evs = per_repo_week_events[repo].get(n, [])
 
             if evs:
@@ -137,14 +137,20 @@ async def compute_verdicts(
     return result
 
 
-def _week_number_for(ev: GithubEvent, start: date) -> int | None:
-    """Map a commit's authored_at to a roadmap week number (or None)."""
+def _week_number_for(ev: GithubEvent, start: date, tz: str | None = None) -> int | None:
+    """Map a commit's authored_at to a roadmap week number (or None).
+
+    The commit instant is mapped to the user's local date so week bucketing
+    matches the week windows (which are also computed in ``tz``).
+    """
     dt = ev.authored_at
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    from app.services.week_clock import current_week_number
+    from app.services.week_clock import _resolve_zone, current_week_number
 
-    return current_week_number(start, dt.date())
+    zone = _resolve_zone(tz)
+    local_date = dt.astimezone(zone).date() if zone is not None else dt.date()
+    return current_week_number(start, local_date)
 
 
 def _in_window(ev: GithubEvent, window_start: datetime, window_end: datetime) -> bool:

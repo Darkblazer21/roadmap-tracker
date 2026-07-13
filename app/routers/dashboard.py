@@ -37,9 +37,10 @@ async def get_dashboard(
     ).scalar_one_or_none()
 
     start_date = settings.start_date if settings else None
-    cal_week = current_week_number(start_date) if start_date else None
+    cal_week = current_week_number(start_date, tz=settings.timezone) if start_date else None
 
     # Current week's aggregate.
+    week = None
     week_agg = None
     if cal_week and cal_week > 0:
         week = await db.get(Week, cal_week)
@@ -79,9 +80,7 @@ async def get_dashboard(
 
     return {
         "calendar_week": cal_week,
-        "current_week_theme": (
-            await db.get(Week, cal_week)
-        ).theme if cal_week and await db.get(Week, cal_week) else None,
+        "current_week_theme": week.theme if week else None,
         "this_week": {
             "total_hours": week_agg.total_hours if week_agg else 0.0,
             "hours_min": week_agg.hours_min if week_agg else 0.0,

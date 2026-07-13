@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,13 +18,19 @@ from app.services.scheduler import run_sync_now
 router = APIRouter(prefix="/api/github", tags=["github"])
 
 
-@router.post("/sync")
+@router.post("/sync", status_code=202)
 async def sync(
-    db: Annotated[AsyncSession, Depends(get_db)],
+    background_tasks: BackgroundTasks,
     _user: Annotated[User, Depends(get_current_user)],
-) -> dict[str, int]:
-    """Trigger a GitHub sync now. Returns {repo: new_count}."""
-    return await run_sync_now()
+) -> dict[str, str]:
+    """Trigger a GitHub sync in the background and return immediately.
+
+    The sync walks each tracked repo's recent history (network I/O) and can
+    take a while, so it runs as a background task instead of blocking the
+    request. Poll GET /verdicts to see the refreshed results.
+    """
+    background_tasks.add_task(run_sync_now)
+    return {"status": "sync_started"}
 
 
 @router.get("/verdicts")
@@ -63,10 +69,14 @@ async def list_events(
                 status_code=400,
                 detail="Cannot filter by week without a configured start_date",
             )
-        window_start, window_end = week_window(week_id, start)
+        window_start, window_end = week_window(week_id, start, settings.timezone)
+        # Compare as absolute instants: tz-aware windows compare directly;
+        # only force UTC when the window is naive (no configured timezone).
+        ws = window_start if window_start.tzinfo is not None else window_start.replace(tzinfo=timezone.utc)
+        we = window_end if window_end.tzinfo is not None else window_end.replace(tzinfo=timezone.utc)
         stmt = stmt.where(
-            GithubEvent.authored_at >= window_start.replace(tzinfo=timezone.utc),
-            GithubEvent.authored_at < window_end.replace(tzinfo=timezone.utc),
+            GithubEvent.authored_at >= ws,
+            GithubEvent.authored_at < we,
         )
 
     rows = (await db.execute(stmt)).scalars().all()

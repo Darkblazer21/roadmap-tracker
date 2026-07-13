@@ -79,7 +79,7 @@ async def _resolve_week_id(
             status_code=400,
             detail="No week_id given and settings.start_date is not set yet",
         )
-    week = current_week_number(settings.start_date)
+    week = current_week_number(settings.start_date, tz=settings.timezone)
     if week is None:
         raise HTTPException(
             status_code=400,

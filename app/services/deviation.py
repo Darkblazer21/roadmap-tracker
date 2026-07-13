@@ -33,7 +33,7 @@ async def compute_deviation(db: AsyncSession) -> dict:
             "tolerance": DEFAULT_TOLERANCE,
         }
 
-    cal_week = current_week_number(settings.start_date)
+    cal_week = current_week_number(settings.start_date, tz=settings.timezone)
     if cal_week is None:
         return {
             "status": "not_started",

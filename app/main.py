@@ -8,8 +8,10 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from redis.exceptions import RedisError
 from sqlalchemy import select
 
 from app.config import settings
@@ -106,6 +108,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RedisError)
+async def _redis_error_handler(request: Request, exc: RedisError) -> JSONResponse:
+    """Surface Redis outages as 503 instead of an unhandled 500."""
+    logger.error("Redis unavailable: %s", exc)
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Redis is unavailable; please try again later."},
+    )
 
 app.include_router(weeks_router.router)
 app.include_router(auth_router.router)

@@ -23,13 +23,15 @@ from app.models.week import Week
 from app.schemas.recap import RecapDraft
 
 
+class WeekNotFoundError(Exception):
+    """Raised when a recap is requested for a week that does not exist."""
+
+
 async def generate_draft(db: AsyncSession, week_id: int) -> RecapDraft:
     """Build the Sunday recap draft for week ``week_id``."""
     week = await db.get(Week, week_id)
     if week is None:
-        from fastapi import HTTPException
-
-        raise HTTPException(status_code=404, detail=f"Week {week_id} not found")
+        raise WeekNotFoundError(week_id)
 
     sessions = (
         await db.execute(select(Session).where(Session.week_id == week_id))

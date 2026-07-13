@@ -87,11 +87,12 @@ async def reset_progress(
         )
     )
 
-    # Clear pomodoro state from Redis.
+    # Clear pomodoro state from Redis (use the canonical key).
+    from app.services.pomodoro_machine import REDIS_KEY
     from app.services.redis_client import get_redis
 
     r = get_redis()
-    await r.delete("pomo:state")
+    await r.delete(REDIS_KEY)
 
     await db.commit()
 
@@ -105,5 +106,5 @@ async def get_current_week(
 ) -> dict[str, int | None]:
     """Return the week number the calendar says we're in right now."""
     settings = await _get_singleton(db)
-    week = current_week_number(settings.start_date) if settings.start_date else None
+    week = current_week_number(settings.start_date, tz=settings.timezone) if settings.start_date else None
     return {"current_week": week}

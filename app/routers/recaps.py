@@ -16,7 +16,7 @@ from app.db import get_db
 from app.models.recap import Recap
 from app.models.user import User
 from app.schemas.recap import RecapDraft, RecapOut, RecapSave
-from app.services.recap_generator import generate_draft
+from app.services.recap_generator import WeekNotFoundError, generate_draft
 from app.services.security import get_current_user
 
 router = APIRouter(prefix="/api/recaps", tags=["recaps"])
@@ -57,7 +57,10 @@ async def generate(
     _user: Annotated[User, Depends(get_current_user)],
 ) -> RecapDraft:
     """Return a draft 3-line recap; does NOT persist (user edits then saves)."""
-    return await generate_draft(db, week_id)
+    try:
+        return await generate_draft(db, week_id)
+    except WeekNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Week {week_id} not found")
 
 
 @router.put("/{week_id}", response_model=RecapOut)
