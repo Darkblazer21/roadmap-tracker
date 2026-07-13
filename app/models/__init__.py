@@ -7,11 +7,12 @@ from app.models.recap import Recap
 from app.models.session import Session
 from app.models.settings import AppSettings
 from app.models.user import User
-from app.models.week import Week
+from app.models.week import Week, WeekStatus
 
 __all__ = [
     "Phase",
     "Week",
+    "WeekStatus",
     "User",
     "AppSettings",
     "Session",
