@@ -11,9 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.models.github_event import GithubEvent
 from app.models.user import User
+from app.services.scheduler import run_sync_now
 from app.services.security import get_current_user
 from app.services.week_verdict import compute_verdicts
-from app.services.scheduler import run_sync_now
 
 router = APIRouter(prefix="/api/github", tags=["github"])
 
@@ -51,7 +51,8 @@ async def list_events(
     limit: Annotated[int, Query(ge=1, le=500)] = 50,
 ) -> list[dict[str, object]]:
     """List cached GitHub events, optionally filtered by week or repo."""
-    from datetime import datetime, timezone
+    from datetime import timezone
+
     from app.models.settings import AppSettings
     from app.services.week_clock import week_window
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
+import redis.asyncio as redis
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,7 +30,6 @@ from app.services.pomodoro_machine import (
 from app.services.redis_client import get_redis
 from app.services.security import get_current_user
 from app.services.week_clock import current_week_number
-import redis.asyncio as redis
 
 router = APIRouter(prefix="/api/pomo", tags=["pomodoro"])
 

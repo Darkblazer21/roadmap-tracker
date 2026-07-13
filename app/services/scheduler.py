@@ -6,11 +6,11 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from sqlalchemy import select
 
 from app.db import async_session_factory
 from app.models.settings import AppSettings
 from app.services.github_sync import sync_all
-from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 

@@ -82,8 +82,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     yield
     # Shutdown hook: stop scheduler, close Redis, close engine.
-    from app.services.scheduler import stop_scheduler
     from app.services.redis_client import close_redis
+    from app.services.scheduler import stop_scheduler
 
     await stop_scheduler()
     await close_redis()

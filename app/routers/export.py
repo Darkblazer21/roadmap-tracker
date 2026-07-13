@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import csv
 import io
-import json
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -93,11 +92,11 @@ async def export_all_json(
         ],
         "daily_logs": [
             {
-                "week_id": l.week_id, "log_date": str(l.log_date),
-                "topic": l.topic, "learned": l.learned,
-                "blockers": l.blockers,
+                "week_id": log.week_id, "log_date": str(log.log_date),
+                "topic": log.topic, "learned": log.learned,
+                "blockers": log.blockers,
             }
-            for l in logs
+            for log in logs
         ],
         "recaps": [
             {

@@ -12,8 +12,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from sqlalchemy import Date, Float, ForeignKey, Integer, String, Text, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Date, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 

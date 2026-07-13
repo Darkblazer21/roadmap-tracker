@@ -59,7 +59,7 @@ class Week(Base):
     recap_sunday: Mapped[str | None] = mapped_column(Text, nullable=True)
     reviewed_at: Mapped[str | None] = mapped_column(String(40), nullable=True)
 
-    phase: Mapped["Phase"] = relationship(back_populates="weeks")
+    phase: Mapped["Phase"] = relationship(back_populates="weeks")  # noqa: F821
 
     def __repr__(self) -> str:
         return f"<Week number={self.number} theme={self.theme[:40]!r}>"

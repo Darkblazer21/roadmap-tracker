@@ -2,7 +2,6 @@
 
 from app.roadmap_parser import parse_roadmap
 
-
 SAMPLE_MARKDOWN = """\
 # Titre
 

@@ -2,19 +2,38 @@
 
 import os
 
+# Configure the test environment BEFORE importing the app so the settings
+# singleton binds to the test config (not the real .env). setdefault keeps
+# any values provided by the CI environment.
+os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ.setdefault("SEED_USERNAME", "testuser")
+os.environ.setdefault("SEED_PASSWORD", "testpass")
+os.environ.setdefault("GITHUB_TOKEN", "")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/1")
+
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-# Import all models BEFORE any test runs so they register on Base.metadata.
+# Import all models so they register on Base.metadata.
 from app.models import (  # noqa: F401
-    AppSettings, DailyLog, GithubEvent, GithubSyncState,
-    Phase, Recap, Session, User, Week,
+    AppSettings,
+    DailyLog,
+    GithubEvent,
+    GithubSyncState,
+    Phase,
+    Recap,
+    Session,
+    User,
+    Week,
+    WeekStatus,
 )
 
+# Default to a local Postgres/Redis so tests run without Docker; CI overrides
+# TEST_DATABASE_URL (and REDIS_URL) to reach the service containers.
 TEST_DB_URL = os.environ.get(
     "TEST_DATABASE_URL",
-    "postgresql+asyncpg://roadmap:roadmap@db:5432/roadmap_tracker_test",
+    "postgresql+asyncpg://roadmap:roadmap@localhost:5432/roadmap_tracker_test",
 )
 os.environ["JWT_SECRET"] = "test-secret"
 os.environ["SEED_USERNAME"] = "testuser"
@@ -38,10 +57,6 @@ async def db_session():
         await conn.run_sync(Base.metadata.create_all)
 
     # Seed the minimal data needed for API tests.
-    from app.models.user import User
-    from app.models.settings import AppSettings
-    from app.models.phase import Phase
-    from app.models.week import Week, WeekStatus
     from app.services.security import hash_password
 
     session_factory = async_sessionmaker(bind=engine, expire_on_commit=False)

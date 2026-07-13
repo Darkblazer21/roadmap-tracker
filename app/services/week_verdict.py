@@ -19,7 +19,6 @@ from app.models.settings import AppSettings
 from app.models.week import Week
 from app.services.week_clock import week_window
 
-
 VERDICT_ON_TIME = "on_time"
 VERDICT_LATE = "late"
 VERDICT_MISSING = "missing"

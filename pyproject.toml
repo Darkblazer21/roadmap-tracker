@@ -1,0 +1,31 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# E (pycodestyle errors), F (pyflakes), I (isort). Kept focused so the gate
+# stays meaningful without flagging pre-existing style nits.
+select = ["E", "F", "I"]
+ignore = ["E501"]  # line-length handled by review, not a CI failure
+
+[tool.ruff.lint.per-file-ignores]
+# conftest must set env vars before importing the app, so module-level code
+# sits between imports (E402).
+"app/tests/conftest.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+force-single-line = false
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = false
+ignore_missing_imports = true
+exclude = ["app/tests", "alembic"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/tests/*", "app/migrations/*"]
+
+[tool.coverage.report]
+show_missing = true

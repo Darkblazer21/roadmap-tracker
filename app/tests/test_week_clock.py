@@ -2,7 +2,7 @@
 
 from datetime import date
 
-from app.services.week_clock import current_week_number, week_window, is_on_track
+from app.services.week_clock import current_week_number, is_on_track, week_window
 
 
 def test_current_week_week1():

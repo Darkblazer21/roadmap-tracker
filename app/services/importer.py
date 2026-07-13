@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.phase import Phase
 from app.models.week import Week
-from app.roadmap_parser import ParsedPhase, ParsedWeek
+from app.roadmap_parser import ParsedPhase
 
 
 async def seed_from_parsed(

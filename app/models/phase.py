@@ -6,7 +6,7 @@ collection of weeks. Order is preserved by ``position`` for sidebar display.
 
 from __future__ import annotations
 
-from sqlalchemy import Integer, String, Text, text
+from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -29,7 +29,7 @@ class Phase(Base):
     # e.g. buffer warnings) - kept for display under the phase.
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    weeks: Mapped[list["Week"]] = relationship(
+    weeks: Mapped[list["Week"]] = relationship(  # noqa: F821
         back_populates="phase",
         cascade="all, delete-orphan",
         order_by="Week.number",
