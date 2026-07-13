@@ -137,7 +137,9 @@ def _encode(state: PomoState) -> str:
     return json.dumps(asdict(state))
 
 
-def _decode(raw: str) -> PomoState:
+def _decode(raw: str | bytes) -> PomoState:
+    if isinstance(raw, bytes):
+        raw = raw.decode("utf-8")
     d = json.loads(raw)
     return PomoState(**d)
 

@@ -66,8 +66,7 @@ async def _resolve_week_id(
 ) -> int:
     """Defaults to the current calendar week derived from start_date."""
     if explicit is not None:
-        week = await db.get(Week, explicit)
-        if week is None:
+        if await db.get(Week, explicit) is None:
             raise HTTPException(status_code=404, detail=f"Week {explicit} not found")
         return explicit
     # Fall back to settings.start_date.
@@ -79,13 +78,13 @@ async def _resolve_week_id(
             status_code=400,
             detail="No week_id given and settings.start_date is not set yet",
         )
-    week = current_week_number(settings.start_date, tz=settings.timezone)
-    if week is None:
+    week_num = current_week_number(settings.start_date, tz=settings.timezone)
+    if week_num is None:
         raise HTTPException(
             status_code=400,
             detail="The roadmap hasn't started yet (start_date is in the future)",
         )
-    return week
+    return week_num
 
 
 @router.get("/state", response_model=PomoStateView)

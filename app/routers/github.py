@@ -59,18 +59,17 @@ async def list_events(
     settings = (
         await db.execute(select(AppSettings).where(AppSettings.id == 1))
     ).scalar_one_or_none()
-    start = settings.start_date if settings else None
 
     stmt = select(GithubEvent).order_by(GithubEvent.authored_at.desc()).limit(limit)
     if repo:
         stmt = stmt.where(GithubEvent.repo == repo)
     if week_id is not None:
-        if start is None:
+        if settings is None or settings.start_date is None:
             raise HTTPException(
                 status_code=400,
                 detail="Cannot filter by week without a configured start_date",
             )
-        window_start, window_end = week_window(week_id, start, settings.timezone)
+        window_start, window_end = week_window(week_id, settings.start_date, settings.timezone)
         # Compare as absolute instants: tz-aware windows compare directly;
         # only force UTC when the window is naive (no configured timezone).
         ws = window_start if window_start.tzinfo is not None else window_start.replace(tzinfo=timezone.utc)

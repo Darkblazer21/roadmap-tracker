@@ -26,8 +26,8 @@ async def seed_from_parsed(
 
     for pp in parsed_phases:
         # --- Upsert phase by key ---
-        result = await session.execute(select(Phase).where(Phase.key == pp.key))
-        phase = result.scalar_one_or_none()
+        phase_result = await session.execute(select(Phase).where(Phase.key == pp.key))
+        phase: Phase | None = phase_result.scalar_one_or_none()
 
         if phase is None:
             phase = Phase(
@@ -50,8 +50,8 @@ async def seed_from_parsed(
 
         # --- Upsert weeks by number ---
         for pw in pp.weeks:
-            result = await session.execute(select(Week).where(Week.number == pw.number))
-            week = result.scalar_one_or_none()
+            week_result = await session.execute(select(Week).where(Week.number == pw.number))
+            week: Week | None = week_result.scalar_one_or_none()
 
             if week is None:
                 week = Week(

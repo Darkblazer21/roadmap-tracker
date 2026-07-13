@@ -37,7 +37,11 @@ async def get_dashboard(
     ).scalar_one_or_none()
 
     start_date = settings.start_date if settings else None
-    cal_week = current_week_number(start_date, tz=settings.timezone) if start_date else None
+    cal_week = (
+        current_week_number(start_date, tz=settings.timezone)
+        if start_date and settings is not None
+        else None
+    )
 
     # Current week's aggregate.
     week = None
