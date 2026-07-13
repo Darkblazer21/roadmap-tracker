@@ -13,6 +13,9 @@ services:
     environment:
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - REDIS_URL=redis://redis:6379/0
+    # Dev: hot-reload enabled here (the baked image CMD has no --reload).
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     ports:
       - "8000:8000"
     depends_on:
@@ -27,6 +30,12 @@ services:
       - ./alembic.ini:/app/alembic.ini
       - ./roadmap.md:/app/roadmap.md:ro
       - ./requirements.txt:/app/requirements.txt:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - roadmap-net
 
@@ -34,7 +43,7 @@ services:
   # PostgreSQL 16
   # ============================================================
   db:
-    image: postgres:16-alpine
+    image: postgres:16.4-alpine
     container_name: roadmap-db
     restart: unless-stopped
     environment:
@@ -57,7 +66,7 @@ services:
   # Redis 7 - pomodoro timer state + rate limiting
   # ============================================================
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: roadmap-redis
     restart: unless-stopped
     command: redis-server --appendonly yes

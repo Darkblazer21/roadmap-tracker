@@ -25,8 +25,8 @@ RUN pip install --upgrade pip
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY requirements.txt requirements.lock.txt ./
+RUN pip install -r requirements.lock.txt
 
 # ---------- Stage 2: runtime ----------
 FROM python:3.13-slim-bookworm AS runtime
@@ -53,6 +53,11 @@ COPY roadmap.md ./roadmap.md
 
 EXPOSE 8000
 
-# Run migrations on container start, then launch uvicorn.
-# RELOAD flag (from env) toggles dev hot-reload.
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 ${RELOAD:+--reload}"]
+# Run as a non-root user in the production image.
+RUN useradd --create-home --uid 10001 appuser
+USER appuser
+
+# Run migrations on container start, then launch uvicorn. The baked image
+# never hot-reloads; docker-compose overrides the command to add --reload
+# for local development.
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

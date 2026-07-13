@@ -1,0 +1,21 @@
+# VCS / CI
+.git
+.github
+
+# Python caches
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Secrets / env
+.env
+.env.example
+
+# Frontend (separate build, not needed in the API image)
+frontend
+node_modules
+
+# Tests (kept out of the production image)
+app/tests
