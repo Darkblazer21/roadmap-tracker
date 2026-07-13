@@ -144,7 +144,15 @@ def _decode(raw: str) -> PomoState:
 
 async def _load(r: redis.Redis) -> PomoState | None:
     raw = await r.get(REDIS_KEY)
-    return _decode(raw) if raw else None
+    if raw is None:
+        return None
+    try:
+        return _decode(raw)
+    except (json.JSONDecodeError, TypeError, ValueError):
+        # Corrupt or legacy state in Redis: drop it and fall back to idle
+        # instead of 500-ing the request.
+        await _clear(r)
+        return None
 
 
 async def _save(r: redis.Redis, state: PomoState) -> None:
@@ -229,7 +237,14 @@ async def sync_state(
     # transition emits a pomodoro Session for the just-finished cycle.
     transitions = 0
     events: list[dict[str, Any]] = []
-    while state.target_ends_at is not None and state.target_ends_at <= _now():
+    # Never advance a paused timer: its target_ends_at is frozen at the
+    # pre-pause deadline, so a passed deadline must not trigger a transition
+    # (that would silently un-pause and discard paused_remaining_sec).
+    while (
+        state.phase != Phase.PAUSED
+        and state.target_ends_at is not None
+        and state.target_ends_at <= _now()
+    ):
         if transitions >= _MAX_TRANSITIONS_PER_SYNC:
             break
         transitions += 1

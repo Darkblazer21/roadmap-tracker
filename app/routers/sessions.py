@@ -7,7 +7,7 @@ and the ``hours_max`` cap alert ( decisión M5 ).
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -39,14 +39,19 @@ async def create_session(
     if week is None:
         raise HTTPException(status_code=404, detail=f"Week {payload.week_id} not found")
 
-    session = Session(
-        week_id=payload.week_id,
-        type=payload.type,
-        duration_sec=payload.duration_sec,
-        started_at=payload.started_at,  # None → server_default now()
-        ended_at=payload.ended_at,
-        notes=payload.notes,
-    )
+    # Conditionally set started_at so we never override the column's
+    # server_default=func.now() with an explicit NULL (which would persist
+    # NULL and 500 on read). Only pass it when the client provided a value.
+    session_kwargs: dict[str, Any] = {
+        "week_id": payload.week_id,
+        "type": payload.type,
+        "duration_sec": payload.duration_sec,
+        "ended_at": payload.ended_at,
+        "notes": payload.notes,
+    }
+    if payload.started_at is not None:
+        session_kwargs["started_at"] = payload.started_at
+    session = Session(**session_kwargs)
     db.add(session)
     await db.flush()  # get the id + server-default started_at
 

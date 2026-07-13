@@ -10,6 +10,8 @@ hours for a day if sessions didn't cover something they read offline.
 
 from __future__ import annotations
 
+from datetime import date
+
 from sqlalchemy import Date, Float, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,7 +26,7 @@ class DailyLog(Base):
     week_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("weeks.number", ondelete="CASCADE"), nullable=False, index=True
     )
-    log_date: Mapped[str] = mapped_column(Date, nullable=False, index=True)
+    log_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     topic: Mapped[str | None] = mapped_column(String(300), nullable=True)
     learned: Mapped[str | None] = mapped_column(Text, nullable=True)
     blockers: Mapped[str | None] = mapped_column(Text, nullable=True)

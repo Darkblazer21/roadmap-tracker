@@ -26,7 +26,10 @@ router = APIRouter(prefix="/api", tags=["weeks"])
 
 
 @router.get("/weeks", response_model=list[PhaseWithWeeks])
-async def list_weeks(db: Annotated[AsyncSession, Depends(get_db)]) -> list[Phase]:
+async def list_weeks(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _user: Annotated[User, Depends(get_current_user)],
+) -> list[Phase]:
     """Return all phases with their ordered weeks for the sidebar."""
     result = await db.execute(
         select(Phase)
@@ -38,7 +41,9 @@ async def list_weeks(db: Annotated[AsyncSession, Depends(get_db)]) -> list[Phase
 
 @router.get("/weeks/{number}", response_model=WeekOut)
 async def get_week(
-    number: int, db: Annotated[AsyncSession, Depends(get_db)]
+    number: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _user: Annotated[User, Depends(get_current_user)],
 ) -> Week:
     result = await db.execute(select(Week).where(Week.number == number))
     week = result.scalar_one_or_none()

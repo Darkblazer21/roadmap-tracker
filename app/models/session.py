@@ -11,6 +11,7 @@ Completed pomodoro sessions automatically bump the linked week's
 from __future__ import annotations
 
 import enum
+from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -37,10 +38,10 @@ class Session(Base):
         default=SessionType.focus,
     )
     # When the study happened. Defaults to now() server-side.
-    started_at: Mapped[str] = mapped_column(
+    started_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    ended_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Duration in seconds. Required (the importer derives hours from this).
     duration_sec: Mapped[float] = mapped_column(Float, nullable=False)
     # Optional free-form note ("studied async/await, did the bot telegram").

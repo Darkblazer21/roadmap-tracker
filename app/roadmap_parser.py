@@ -225,7 +225,7 @@ def parse_roadmap(markdown: str) -> list[ParsedPhase]:
             # Detect buffer week references
             for m in _BUFFER_REF_RE.finditer(line):
                 lo, hi = int(m.group(1)), int(m.group(2))
-                if "idense" in line.lower() or "buffer" in line.lower():
+                if "dense" in line.lower() or "buffer" in line.lower():
                     for n in range(lo, hi + 1):
                         current.buffer_weeks.add(n)
             continue
